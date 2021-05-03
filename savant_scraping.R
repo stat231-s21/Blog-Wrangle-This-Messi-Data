@@ -23,7 +23,7 @@ savant_data_filtered <- savant_data %>%
          pitcher...8, events, zone, stand, p_throws, type, hit_location, balls, strikes, on_3b, 
          on_2b, on_1b, outs_when_up, inning, hc_x, hc_y, launch_speed, launch_angle, effective_speed,
          estimated_ba_using_speedangle, estimated_woba_using_speedangle, pitch_number, pitch_name,
-         bat_score, fld_score)
+         bat_score, fld_score, inning_topbot)
 
 save(savant_data_filtered, file="data/savant_data_filtered.Rdata")
 

@@ -13,7 +13,7 @@ spatial_data <- savant_data_filtered %>%
   select(player_name, hc_x, hc_y, events, stand, launch_speed, launch_angle) %>%
   mutate(angle = ifelse(hc_x < 125, 
                         atan((208 - hc_y) / (125 - hc_x)) * 180 / pi - 45, 
-                        135 - atan((208 - hc_y) / (hc_y - 125)) * 180 / pi))
+                        135 - atan((208 - hc_y) / (hc_x - 125)) * 180 / pi))
 
   
 splits_data <- savant_data_filtered %>%

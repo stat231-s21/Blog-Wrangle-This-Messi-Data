@@ -14,10 +14,10 @@ testSpatial <- spatial_data %>%
                           (18<angle & angle<36) ~ "2", 
                           (36<angle & angle <54) ~ "3",
                           (54<angle & angle <72) ~ "4",
-                          (72<angle & angle <90) ~ "5")) %>%
-  group_by(zone) %>%
-  mutate(zone = as.numeric(zone))
-  summarize (player_name = player_name, angle = angle, sumZone = sum(zone))
+                          (72<angle & angle <90) ~ "5"))# %>%
+  #group_by(zone) %>%
+ # mutate(zone = as.numeric(zone))
+ # summarize (player_name = player_name, angle = angle, sumZone = sum(zone))
   
 
 

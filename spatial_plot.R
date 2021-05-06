@@ -14,10 +14,11 @@ testSpatial <- spatial_data %>%
                           (18<angle & angle<36) ~ "2", 
                           (36<angle & angle <54) ~ "3",
                           (54<angle & angle <72) ~ "4",
-                          (72<angle & angle <90) ~ "5"))# %>%
-  #group_by(zone) %>%
- # mutate(zone = as.numeric(zone))
- # summarize (player_name = player_name, angle = angle, sumZone = sum(zone))
+                          (72<angle & angle <90) ~ "5")) %>%
+  mutate(zone = as.factor(zone))
+#group_by(zone) %>%
+# mutate(zone = as.numeric(zone))
+# summarize (player_name = player_name, angle = angle, sumZone = sum(zone))
   
 
 
@@ -42,4 +43,39 @@ g <- ggplot(data = testSpatial, aes(x = hc_x, y = hc_y, color = zone)) +
   
 g
 
-#
+spatialPts <- data.frame(x = c("125", "30", "48",
+                               "125", "48", "90", 
+                               "125", "90", "160",
+                               "125", "160", "203",
+                               "125", "203", "220"
+                               ),
+                         y = c("208", "100", "60", 
+                               "208", "60", "20",
+                               "208", "20", "20",
+                               "208", "20", "60",
+                               "208", "60", "100"),
+                         zone = c("1", "1", "1", 
+                                  "2", "2", "2", 
+                                  "3", "3", "3", 
+                                  "4", "4", "4",
+                                  "5", "5", "5"))
+spatialPts <- spatialPts %>%
+  mutate(x = as.numeric(x), y = as.numeric(y))
+
+testSpatial2 <- testSpatial %>%
+  group_by(zone) %>%
+  mutate(zone = as.numeric(zone)) %>%
+  summarize(player_name = player_name, zoneTot = n()) %>%
+  distinct() %>%
+  mutate(zone = as.factor(zone)) 
+  
+
+plotTest <- right_join(testSpatial2, spatialPts) 
+
+ggplot(plotTest) +
+  geom_polygon(aes(x = x, y = y, group = zone
+                   , fill = zoneTot), color = "black") +
+  theme_void() +
+  coord_fixed(ratio = 1.3) +
+  scale_y_reverse() +
+  geom_point(data = testSpatial, aes(x = hc_x, y=hc_y, color = events))

@@ -22,13 +22,15 @@ genericStadium <- MLBStadiumsPathData %>%
   filter(team == "generic") 
   
 
-g <- ggplot(data = testSpatial, aes(x = hc_x, y = hc_y)) +
-    #geom_point() +
+g <- ggplot(data = testSpatial, aes(x = hc_x, y = hc_y, color = zone)) +
+    geom_point() +
     geom_mlb_stadium(stadium_ids = "generic", stadium_segments = "all") +
-    scale_y_reverse() + 
-    #geom_segment(aes(x = 125, y = 208, xend = 90, yend = tan(63*pi/180)*25)) +
-    geom_segment(aes(x = 125, y = 208, xend = 115, yend =  208-tan(81*pi/180)*10)) +
-    geom_segment(aes(x = 125, y = 208, xend = 150, yend = 208 + tan(99*pi/180)*25)) 
+    scale_y_reverse() +
+    geom_segment(aes(x = 125, y = 208, xend = 45, yend = 208 - tan(63*pi/180)*80)) +
+    geom_segment(aes(x = 125, y = 208, xend = 95, yend =  208 -tan(81*pi/180)*30)) +
+    geom_segment(aes(x = 125, y = 208, xend = 155, yend = 208 + tan(99*pi/180)*30)) +
+    geom_segment(aes(x = 125, y = 208, xend = 205, yend = 208 + tan(117*pi/180)*80)) 
+  
   
 
 g

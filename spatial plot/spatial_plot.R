@@ -9,8 +9,8 @@ library(GeomMLBStadiums)
 #want to separate into 5 categories based on angle
 #also want to make our field work with the geom_polygon similar to our maps
 
-testSpatial <- spatial_data %>%
-  filter(player_name == "Judge, Aaron") %>%
+test_Spatial <- spatial_data %>%
+  filter(player_name == "Judge, Aaron" | player_name == "Trout, Mike") %>%
   mutate(zone = case_when((angle < 18) ~ "1",
                           (18<angle & angle<36) ~ "2", 
                           (36<angle & angle <54) ~ "3",
@@ -47,11 +47,16 @@ spatialPts <- spatialPts %>%
   mutate(x = as.numeric(x), y = as.numeric(y))
 
 
-testSpatial2 <- testSpatial %>%
-  group_by(zone) %>%
-  summarize(player_name = player_name, zoneTot = n()) %>%
+testSpatial3 <- test_Spatial %>%
+  group_by(zone, player_name) %>%
+  summarize(zoneNum = n()) %>%
   distinct() %>%
-  mutate(zone = as.factor(zone), zoneProp = zoneTot/sum(testSpatial2$zoneTot)) 
+  group_by(zone) %>%
+  summarize(player_name = player_name, zoneNum = zoneNum, zoneTot = sum(zoneNum))
+
+
+#%>%
+ # mutate(zone = as.factor(zone), zoneProp = zoneTot/sum(testSpatial3$zoneTot)) 
   
 
 plotTest <- right_join(testSpatial2, spatialPts) 

@@ -60,8 +60,8 @@ ui <- fluidPage(
  titlePanel("Player Spray Charts"),
  sidebarLayout(
    sidebarPanel(
-     selectInput(inputID = "player",
-                 label = "Choose Player(s) to View",
+     selectizeInput(inputID = "player",
+                 label = "Choose Player to View",
                  choices = playerChoices,
                  selected = "Trout, Mike")),
    mainPanel(
@@ -74,9 +74,15 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   
+  output$spray <- renderPlotly({
+  
   dataSpray <- spatial_data %>%
-    filter(player_name %in% input$player)
+    filter(player_name %in% input$player) %>%
+    group_by(zone, player_name) %>%
+    summarize(zoneTot = n()) %>%
+    distinct() %>%
+    mutate(zone = as.factor(zone), zoneProp = zoneTot/sum(testSpatial2$zoneTot)) 
   
-  
+  })
 }
  

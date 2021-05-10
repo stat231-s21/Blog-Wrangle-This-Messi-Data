@@ -1,15 +1,14 @@
-
 library(shiny)
 library(tidyverse)
+library(plotly)
+library(shinyjs)
+library(stringr)
 
 # Pitch Choices
 load("data/game_sim.Rdata")
 
 pitch_choices <- game_sim_data$pitch_name %>% unique()
 
-num_strikes <- 0
-num_balls <- 0
-num_outs <- 0 
 
 pitches_thrown <- data.frame()
 
@@ -19,6 +18,7 @@ strikezone <- data.frame(x=c(-0.85, 0.85, 0.85, -0.85),
                          yend = c(1.6, 3.5, 3.5, 1.6))
 
 ui <- fluidPage(
+    useShinyjs(),
 
     # Application title
     titlePanel("Old Faithful Geyser Data"),
@@ -42,12 +42,15 @@ ui <- fluidPage(
                           selected = c("4-Seam Fastball"),
                           inline = FALSE),
             actionButton("throwPitch",
-                         label = "Throw Pitch!")
+                         label = "Throw Pitch!"),
+            actionButton("newAtBat",
+                         label = "Restart At-Bat")
         ),
 
         # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("distPlot")
+           plotOutput("distPlot"),
+           textOutput("countName")
         )
     )
 )
@@ -55,26 +58,51 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
     
-    rv <- reactiveValues(plot = NULL,
-                         pitches_thrown = NULL)
     
-    observeEvent(input$pitchThrown, {
-        data <- game_sim_data %>%
-            filter(strikes == num_strikes, balls == num_balls, 
-                   outs_when_up == num_outs, pitch_name == input$pitchThrown)
-        pitch <- data[sample(1:nrow(data), 1),]
-        pitches_thrown <- rbind(pitches_thrown, pitch)
+    rv <- reactiveValues(plot = NULL,
+                         pitches_thrown = data.frame(), 
+                         num_strikes = 0,
+                         num_balls = 0,
+                         num_outs = 0,
+                         atBatDescription = "")
+    
+    
         
+    observeEvent(input$throwPitch, {
+        
+        if(rv$num_strikes + rv$num_balls == 0) {
+            disable("pitcherThrows") 
+            disable("batterStands")
+        }
+    
+    
+        
+    
+        data <- game_sim_data %>%
+            filter(strikes == rv$num_strikes, balls == rv$num_balls, 
+                   outs_when_up == rv$num_outs, pitch_name == input$pitchThrown,
+                   p_throws == substr(input$pitcherThrows, 1, 1),
+                   stand == substr(input$batterStands, 1, 1))
+        pitch <- data[sample(1:nrow(data), 1),]
+        rv$pitches_thrown <- rbind(rv$pitches_thrown, pitch)
         if (pitch$type == "B") {
-            num_balls <- num_balls + 1
+            rv$num_balls <- rv$num_balls + 1
+            if(rv$num_balls == 4){
+                disable("throwPitch")
+                rv$atBatDescription = sub(",", ".", str_extract(pitch$des, ".*?[a-z0-9][,.]"))
+            }
         } else if (pitch$type == "S") {
-            num_strikes <- num_strikes + 1
-            #TODO: num_strikes == 3
+            rv$num_strikes <- rv$num_strikes + 1
+            #TODO: fouling off pitches with 2 strikes, ask about color changes
+            if (rv$num_strikes == 3){
+                disable("throwPitch")
+                rv$atBatDescription = sub(",", ".", str_extract(pitch$des, ".*?[a-z0-9][,.]"))
+            }
         } else {
-            #TODO: Handle other event
+            rv$atBatDescription = sub(",", ".", str_extract(pitch$des, ".*?[a-z0-9][,.]"))
         }
         
-        rv$plot <- ggplot(pitches_thrown) +
+        rv$plot <- ggplot(rv$pitches_thrown) +
             geom_segment(data = strikezone, aes(x=x, y=y, xend=xend, yend=yend)) +
             geom_curve(aes(x=release_pos_x, y=release_pos_z, 
                            xend=plate_x, yend=plate_z, color=pitch_type),
@@ -84,9 +112,29 @@ server <- function(input, output) {
             theme_void() 
     })
     
+    observeEvent(input$newAtBat, {
+        enable("pitcherThrows")
+        enable("batterStands")
+        enable("throwPitch")
+        rv$num_strikes = 0
+        rv$num_balls = 0
+        rv$atBatDescription = ""
+        rv$pitches_thrown = data.frame()
+        rv$plot = NULL
+        })
+    
     output$distPlot <- renderPlot({
         if (is.null(rv$plot)) return()
         rv$plot
+    })
+    
+    output$countName <- renderText({
+        if (rv$atBatDescription == ""){
+            paste(rv$num_balls, "-", rv$num_strikes)
+        }
+        else(
+            rv$atBatDescription
+        )
     })
 }
 

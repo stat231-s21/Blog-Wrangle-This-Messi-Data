@@ -48,15 +48,12 @@ spatialPts <- spatialPts %>%
 
 
 testSpatial3 <- test_Spatial %>%
-  group_by(zone, player_name) %>%
+  group_by(zone) %>%
   summarize(zoneNum = n()) %>%
   distinct() %>%
   group_by(zone) %>%
-  summarize(player_name = player_name, zoneNum = zoneNum, zoneTot = sum(zoneNum))
-
-
-#%>%
- # mutate(zone = as.factor(zone), zoneProp = zoneTot/sum(testSpatial3$zoneTot)) 
+  summarize(zoneNum = zoneNum, zoneTot = sum(zoneNum)) %>%
+ mutate(zone = as.factor(zone), zoneProp = zoneTot/sum(testSpatial3$zoneTot)) 
   
 
 plotTest <- right_join(testSpatial2, spatialPts) 

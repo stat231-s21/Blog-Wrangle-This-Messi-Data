@@ -76,12 +76,29 @@ server <- function(input, output) {
   
   output$spray <- renderPlotly({
   
-  dataSpray <- spatial_data %>%
+  dataSpatial <- spatial_data %>%
     filter(player_name %in% input$player) %>%
-    group_by(zone, player_name) %>%
-    summarize(zoneTot = n()) %>%
+    group_by(zone) %>%
+    summarize(zoneNum = n()) %>%
     distinct() %>%
-    mutate(zone = as.factor(zone), zoneProp = zoneTot/sum(testSpatial2$zoneTot)) 
+    group_by(zone) %>%
+    summarize(zoneNum = zoneNum, zoneTot = sum(zoneNum)) %>%
+    mutate(zone = as.factor(zone), zoneProp = zoneTot/sum(dataSpray$zoneTot)) %>%
+    right_join(spatialPts)
+  
+  dataSpray <- spatial_data %>%
+    filter(player_name %in% input$player)
+  
+  plot <- ggplot(dataSpatial) +
+    geom_polygon(aes(x = x, y = y, group = zone
+                     , fill = zoneProp), color = "black") +
+    theme_void() +
+    coord_fixed(ratio = 1.3) +
+    scale_y_reverse() +
+    geom_point(data = testSpray, aes(x = hc_x, y=hc_y, color = events))
+    
+  ggplotly(plot, tooltip = "text") %>%
+    layout(hovermode = 'compare')
   
   })
 }

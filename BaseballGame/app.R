@@ -4,6 +4,7 @@ library(tidyverse)
 
 # Pitch Choices
 load("data/game_sim.Rdata")
+
 pitch_choices <- game_sim_data$pitch_name %>% unique()
 
 num_strikes <- 0

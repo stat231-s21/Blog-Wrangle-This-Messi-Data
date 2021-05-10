@@ -1,5 +1,6 @@
 load("data/savant_data_filtered.Rdata")
 load("data/spatial_data.Rdata")
+
 library(tidyverse)
 library(ggplot2)
 library(GeomMLBStadiums)

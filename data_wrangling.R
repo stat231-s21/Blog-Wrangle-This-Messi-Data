@@ -23,10 +23,14 @@ splits_data <- savant_data_filtered %>%
                         "field_error", "fielders_choice", "double_play", "triple",
                         "sac_bunt", "fielders_choice_out", "sac_fly_double_play",
                         "triple_play", "walk", "hit_by_pitch", "strikeout", "other_out", 
-                       "strikeout_double_play", "catcher_interf")) %>%
+                       "strikeout_double_play", "catcher_interf"),
+         balls != 4, strikes != 3) %>%
+  mutate(pitch_type = case_when(pitch_type == "KC" ~ "CU",
+                                TRUE ~ pitch_type)) %>%
+  filter(pitch_type %in% c("FF", "CH", "SL", "FT", "SI", "CU", "FC")) %>%
   select(player_name, events, pitch_type, p_throws, strikes, balls, on_1b, on_2b, on_3b,
          inning_topbot) %>%
-  mutate(count = paste(strikes, "-", balls, sep = " "),
+  mutate(count = paste(balls, "-", strikes, sep = " "),
          runners_on = ifelse(is.na(on_1b), 0, 1) + 
                       ifelse(is.na(on_2b), 0, 1) +
                       ifelse(is.na(on_3b), 0, 1),

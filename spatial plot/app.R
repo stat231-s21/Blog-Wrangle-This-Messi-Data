@@ -86,7 +86,7 @@ ui <- fluidPage(
      checkboxGroupInput(inputId = "hitLocations",
                    label = "Include Outcome(s)",
                    choices = hitChoices,
-                   selected = hitChoices,
+                   selected = c("HR", "3B", "2B", "1B"),
                    inline = TRUE)),
    mainPanel(
      plotlyOutput(outputId = "spray")
@@ -129,7 +129,7 @@ server <- function(input, output) {
     
   
  ggplotly(plot, tooltip = "all") %>%
-   layout(hovermode = 'compare')
+   layout(hovermode = 'closest')
 
   })
 }

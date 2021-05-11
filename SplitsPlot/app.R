@@ -48,7 +48,7 @@ ui <- fluidPage(
     
     # Show a plot of the generated distribution
     mainPanel(
-      plotOutput("splitPlot"),
+      plotlyOutput("splitPlot"),
       
     )
   )
@@ -59,30 +59,51 @@ ui <- fluidPage(
 
 
 server <- function(input, output){
-  output$splitPlot <- renderPlot({
+  output$splitPlot <- renderPlotly({
+    # Get name of columns for pivot wider down below
+    columns <- c()
+    for (stat in c("average","slugging")) {
+      for (split in  unique(battingSplits[input$split])) {
+        columns <- append(columns, paste(stat, split, sep = "_"))
+      }
+    }
+    
+    # Get data into the right format
     battingPlot <- battingSplits %>%
       filter(player_name %in% input$player) %>%
-      group_by(player_name, input$split) %>%
+      group_by(player_name, !!rlang::sym(input$split)) %>%
       summarize(average = sum(hit_out == "Hit")/n(), slugging = (sum(events == "single") +
                                      sum(events == "double")*2 + sum(events == "triple")*3 + 
-                                     sum(events == "home_run")*4) / n()) %>%
-      pivot_wider(names_from = input$split, values_from = c("average", "slugging"))
+                                      sum(events == "home_run")*4) / n()) %>%
+      pivot_wider(names_from = input$split, values_from = c("average", "slugging")) %>%
+      pivot_longer(cols = columns,
+                   names_to = "stat", values_to = "val") %>%
+      separate(stat, into = c("stat","split"), sep = "_") %>%
+      pivot_wider(names_from = "split", values_from = "val")
     
-    plot <- ggplot(data) +
-      geom_point(aes(x = player_name, y = val_epl, color = "Premier League"), size = 16) +
-      geom_point(aes(x = squad_and_year, y = val_champ, color = "Championship"), size = 16) +
-      # add arrow to show which year was first
-      labs(x = "Player Statistic", 
-           y = statChoicesNames[statChoicesValues == input$selectedStat],
-           title = "Performance in EPL vs Championship", color = "League") +
+    # Create plot
+    plot <- ggplot(battingPlot) 
+    
+    # Add a geom_point for every split
+    for (i in 3:ncol(battingPlot)) {
+      print(colnames(battingPlot)[i])
+      plot <- plot +
+        geom_point(aes(x = player_name, y = !!rlang::sym(colnames(battingPlot)[i]),
+                       text = paste(colnames(battingPlot)[i]), "-", 
+                                    round(!!rlang::sym(colnames(battingPlot)[i]), 3)),
+                   color = ifelse(i == 3, "blue", "red")) +
+        facet_wrap(~stat)
+    }
+
+    plot <- plot +
+      labs(x = "", y = "Value of Stat") +
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
     
-    plot
+    ggplotly(plot, tooltip = "text")
   })
     
 
    
 }
-
 
 shinyApp(ui = ui, server = server)

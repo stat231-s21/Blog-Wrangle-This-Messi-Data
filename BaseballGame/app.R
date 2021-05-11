@@ -78,7 +78,7 @@ server <- function(input, output) {
                          pitches_thrown = data.frame(), 
                          num_strikes = 0,
                          num_balls = 0,
-                         num_outs = 0,
+                         num_outs = 1,
                          atBatDescription = "",
                          bases = c(FALSE, FALSE, FALSE, TRUE))
     
@@ -206,6 +206,37 @@ server <- function(input, output) {
                 geom_point(data = rv$ball_in_play, aes(x= hc_x, y=hc_y), size = 6) +
                 geom_segment(data = rv$ball_in_play, aes(x= hc_x, y=hc_y, xend=xend, yend=yend), size=2)
         }
+        
+        p <- p +
+            annotate("text", x = 35, y = 160, label = "Outs") +
+            annotate("text", x = 35, y = 170, label = "Balls") +
+            annotate("text", x = 35, y = 180, label = "Strikes")
+        
+        # Add dots for outs
+        outs_df <- data.frame()
+        for (i in 1:2) {
+            outs_df <- rbind(outs_df, data.frame(x=45+i*6, y=160, 
+                                                 out = ifelse(rv$num_outs >= i, "yes", "no")))
+        }
+        # Add dots for strikes
+        strikes_df <- data.frame()
+        for (i in 1:2) {
+            strikes_df <- rbind(strikes_df, data.frame(x=45+i*6, y=180, 
+                                                 out = ifelse(rv$num_strikes >= i, "yes", "no")))
+        }
+        # Add dots for balls
+        balls_df <- data.frame()
+        for (i in 1:3) {
+            balls_df <- rbind(balls_df, data.frame(x=45+i*6, y=170, 
+                                                 out = ifelse(rv$num_balls >= i, "yes", "no")))
+        }
+        
+        cols <- c("yes" = "black", "no" = "grey")
+        p <- p +
+            geom_point(data = outs_df, aes(x=x, y=y, color = out)) +
+            geom_point(data = balls_df, aes(x=x, y=y, color = out)) +
+            geom_point(data = strikes_df, aes(x=x, y=y, color = out)) +
+            scale_color_manual(values = cols)
         
         p +
             scale_y_reverse() +

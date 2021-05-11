@@ -2,10 +2,14 @@ library(shiny)
 library(tidyverse)
 library(ggplot2)
 library(plotly)
+library(GeomMLBStadiums)
 
 load("data/savant_data_filtered.Rdata")
 load("data/spatial_data.Rdata")
 
+
+#want to see use spatial data where zones are portions of the field
+#find angle from the home plate point and classify zone 
 spatial_data <- spatial_data %>%
   mutate(angle = ifelse(hc_x < 125, 
                         atan((208 - hc_y) / (125 - hc_x)) * 180 / pi - 45, 
@@ -32,6 +36,20 @@ testSpatial <- spatial_data %>%
   distinct() %>%
   mutate(zone = as.factor(zone))
 
+
+
+#the code was used to find coordinates of our spatialPts dataset (was com)
+
+#g <- ggplot(data = testSpatial, aes(x = hc_x, y = hc_y, color = zone)) +
+#geom_point() +
+#geom_mlb_stadium(stadium_ids = "generic", stadium_segments = "all") +
+#scale_y_reverse() +
+#geom_segment(aes(x = 125, y = 208, xend = 48, yend = 208 - tan(63*pi/180)*77)) +
+#geom_segment(aes(x = 125, y = 208, xend = 95, yend =  208 - tan(81*pi/180)*30)) +
+#geom_segment(aes(x = 125, y = 208, xend = 155, yend = 208 + tan(99*pi/180)*30)) +
+#geom_segment(aes(x = 125, y = 208, xend = 202, yend = 208 + tan(117*pi/180)*77)) 
+
+#create the outline for our field so we can make chlorpleth map 
 spatialPts <- data.frame(x = c("125", "30", "48",
                                "125", "48", "90", 
                                "125", "90", "160",
@@ -52,20 +70,26 @@ spatialPts <- spatialPts %>%
   mutate(x = as.numeric(x), y = as.numeric(y))
 
 
-
 playerChoices <- unique(spatial_data$player_name)
+hitChoices <- unique(spatial_data$events)
 
 ui <- fluidPage(
   
  titlePanel("Player Spray Charts"),
  sidebarLayout(
    sidebarPanel(
-     selectizeInput(inputID = "player",
+     selectizeInput(inputId  = "player",
                  label = "Choose Player to View",
                  choices = playerChoices,
-                 selected = "Trout, Mike")),
+                 selected = "Trout, Mike"),
+     
+     checkboxGroupInput(inputId = "hitLocations",
+                   label = "Include Outcome(s)",
+                   choices = hitChoices,
+                   selected = hitChoices,
+                   inline = TRUE)),
    mainPanel(
-     plotOutput(outputId = "spray")
+     plotlyOutput(outputId = "spray")
    )
  )
   
@@ -76,6 +100,7 @@ server <- function(input, output) {
   
   output$spray <- renderPlotly({
   
+    #calculate the proportion hit to each zone based on what player is chosen
   dataSpatial <- spatial_data %>%
     filter(player_name %in% input$player) %>%
     group_by(zone) %>%
@@ -83,23 +108,30 @@ server <- function(input, output) {
     distinct() %>%
     group_by(zone) %>%
     summarize(zoneNum = zoneNum, zoneTot = sum(zoneNum)) %>%
-    mutate(zone = as.factor(zone), zoneProp = zoneTot/sum(dataSpray$zoneTot)) %>%
+    mutate(zone = as.factor(zone), zoneProp = 100*zoneTot/sum(zoneTot)) %>%
     right_join(spatialPts)
   
   dataSpray <- spatial_data %>%
-    filter(player_name %in% input$player)
+    filter(player_name %in% input$player) %>%
+    filter(events %in% input$hitLocations)
   
   plot <- ggplot(dataSpatial) +
     geom_polygon(aes(x = x, y = y, group = zone
                      , fill = zoneProp), color = "black") +
     theme_void() +
     coord_fixed(ratio = 1.3) +
-    scale_y_reverse() +
-    geom_point(data = testSpray, aes(x = hc_x, y=hc_y, color = events))
-    
-  ggplotly(plot, tooltip = "text") %>%
-    layout(hovermode = 'compare')
+    scale_y_reverse() 
   
+    plot <- plot +
+      geom_point(data = dataSpray, aes(x = hc_x, y=hc_y, color = events))
+    # +
+    #geom_mlb_stadium(stadium_ids = "generic", stadium_segments = "all")
+    
+  
+ ggplotly(plot, tooltip = "all") %>%
+   layout(hovermode = 'compare')
+
   })
 }
  
+shinyApp(ui = ui, server = server)

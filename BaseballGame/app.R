@@ -284,3 +284,5 @@ shinyApp(ui = ui, server = server)
 #   Score (the score is x-y, can you save the 9th)
 #   Difficulty? Different scores?
 #   plotly
+#   restart batter next -> better
+#   restart inning

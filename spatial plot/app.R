@@ -19,6 +19,15 @@ spatial_data <- spatial_data %>%
                           (36<angle & angle <54) ~ "3",
                           (54<angle & angle <72) ~ "4",
                           (72<angle & angle <90) ~ "5")) %>%
+  mutate(hit_out  = case_when(str_detect(events,"out") ~ "Out",
+                                      str_detect(events,"error") ~ "Out",
+                                      str_detect(events,"play") ~ "Out",
+                                      str_detect(events,"out") ~ "Out",
+                                      str_detect(events,"run") ~ "Hit",
+                                      str_detect(events,"single") ~ "Hit",
+                                      str_detect(events,"triple") ~ "Hit",
+                                      str_detect(events,"double") ~ "Hit",
+                                      str_detect(events,"fly") ~ "Out")) %>%
   mutate(events = case_when(str_detect(events,"out") ~ "Out",
                             str_detect(events,"error") ~ "Error",
                             str_detect(events,"play") ~ "Out",
@@ -27,7 +36,7 @@ spatial_data <- spatial_data %>%
                             str_detect(events,"single") ~ "1B",
                             str_detect(events,"triple") ~ "3B",
                             str_detect(events,"double") ~ "2B",
-                            str_detect(events,"fly") ~ "Sacrifice"))
+                            str_detect(events,"fly") ~ "Sacrifice")) 
 
 
 testSpatial <- spatial_data %>%
@@ -71,6 +80,7 @@ spatialPts <- spatialPts %>%
 
 
 playerChoices <- unique(spatial_data$player_name)
+hitOutChoices <- unique(spatial_data$hit_out)
 hitChoices <- unique(spatial_data$events)
 
 ui <- fluidPage(
@@ -82,14 +92,13 @@ ui <- fluidPage(
                  label = "Choose Player to View",
                  choices = playerChoices,
                  selected = "Trout, Mike"),
-     
      checkboxGroupInput(inputId = "hitLocations",
                    label = "Include Outcome(s)",
-                   choices = hitChoices,
-                   selected = c("HR", "3B", "2B", "1B"),
+                   choices = hitOutChoices,
+                   selected = "Hit",
                    inline = TRUE)),
    mainPanel(
-     plotlyOutput(outputId = "spray")
+     plotOutput(outputId = "spray")
    )
  )
   
@@ -98,7 +107,7 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   
-  output$spray <- renderPlotly({
+  output$spray <- renderPlot({
   
     #calculate the proportion hit to each zone based on what player is chosen
   dataSpatial <- spatial_data %>%
@@ -113,7 +122,7 @@ server <- function(input, output) {
   
   dataSpray <- spatial_data %>%
     filter(player_name %in% input$player) %>%
-    filter(events %in% input$hitLocations)
+    filter(hit_out %in% input$hitLocations)
   
   plot <- ggplot(dataSpatial) +
     geom_polygon(aes(x = x, y = y, group = zone
@@ -121,14 +130,13 @@ server <- function(input, output) {
     theme_void() +
     coord_fixed(ratio = 1.3) +
     scale_y_reverse() +
-    geom_point(data = dataSpray, aes(x = hc_x, y=hc_y, color = events))
+    geom_point(data = dataSpray, aes(x = hc_x, y=hc_y, color = events)) 
     
-  # +
-    #geom_mlb_stadium(stadium_ids = "generic", stadium_segments = "all")
+  plot
     
   
- ggplotly(plot, tooltip = "all") %>%
-   layout(hovermode = 'closest')
+ #ggplotly(plot, tooltip = "all") %>%
+   #layout(hovermode = 'closest')
 
   })
 }

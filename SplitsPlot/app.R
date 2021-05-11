@@ -78,28 +78,19 @@ server <- function(input, output){
       pivot_wider(names_from = input$split, values_from = c("average", "slugging")) %>%
       pivot_longer(cols = columns,
                    names_to = "stat", values_to = "val") %>%
-      separate(stat, into = c("stat","split"), sep = "_") %>%
-      pivot_wider(names_from = "split", values_from = "val")
+      separate(stat, into = c("stat","split"), sep = "_")
     
     # Create plot
-    plot <- ggplot(battingPlot) 
-    
-    # Add a geom_point for every split
-    for (i in 3:ncol(battingPlot)) {
-      print(colnames(battingPlot)[i])
-      plot <- plot +
-        geom_point(aes(x = player_name, y = !!rlang::sym(colnames(battingPlot)[i]),
-                       text = paste(colnames(battingPlot)[i]), "-", 
-                                    round(!!rlang::sym(colnames(battingPlot)[i]), 3)),
-                   color = ifelse(i == 3, "blue", "red")) +
-        facet_wrap(~stat)
-    }
-
-    plot <- plot +
+    plot <- ggplot(battingPlot) +
+      geom_point(aes(x = player_name, color = split, y = val,
+                     text = paste0("<b>", str_to_title(split), ":</b> ", 
+                                   str_pad(round(val, 3), width = 5, pad = "0", side = "right")))) +
+      facet_wrap(~stat) +
       labs(x = "", y = "Value of Stat") +
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
     
-    ggplotly(plot, tooltip = "text")
+    ggplotly(plot, tooltip = "text") %>%
+      layout(hovermode = 'compare')
   })
     
 
@@ -107,3 +98,5 @@ server <- function(input, output){
 }
 
 shinyApp(ui = ui, server = server)
+
+# TODO: hovertext when ave/slg == 0 or 1

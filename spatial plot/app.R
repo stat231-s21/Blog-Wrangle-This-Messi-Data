@@ -120,11 +120,10 @@ server <- function(input, output) {
                      , fill = zoneProp), color = "black") +
     theme_void() +
     coord_fixed(ratio = 1.3) +
-    scale_y_reverse() 
-  
-    plot <- plot +
-      geom_point(data = dataSpray, aes(x = hc_x, y=hc_y, color = events))
-    # +
+    scale_y_reverse() +
+    geom_point(data = dataSpray, aes(x = hc_x, y=hc_y, color = events))
+    
+  # +
     #geom_mlb_stadium(stadium_ids = "generic", stadium_segments = "all")
     
   

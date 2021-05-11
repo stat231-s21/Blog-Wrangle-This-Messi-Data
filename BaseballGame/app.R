@@ -187,7 +187,6 @@ server <- function(input, output) {
     #####################################
     
     output$sprayChart <- renderPlot({
-        # Scale color manual
         bases_df <- data.frame(base = c(1:4), runner_on = rv$bases)
         bases <- bases %>%
             inner_join(bases_df, by = "base") %>%
@@ -200,7 +199,7 @@ server <- function(input, output) {
             geom_polygon(data = bases, aes(x=x, y=y, group=base, 
                                            fill = runner_on),
                          color = "black") +
-            scale_color_manual(values = cols) 
+            scale_fill_manual(values = cols) 
         
         if (nrow(rv$ball_in_play > 0)) {
             p <- p + 
@@ -211,7 +210,8 @@ server <- function(input, output) {
         p +
             scale_y_reverse() +
             coord_fixed() +
-            theme_void()
+            theme_void() +
+            theme(legend.position = "none")
     })
     
     #####################################
@@ -250,7 +250,6 @@ shinyApp(ui = ui, server = server)
 # TODO:
 #   Outs
 #   HBP, Walks
-#   Color
 #   Score (the score is x-y, can you save the 9th)
 #   Difficulty? Different scores?
 #   plotly

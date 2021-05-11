@@ -53,7 +53,7 @@ game_sim_data <- savant_data %>%
 
 # Randomly select an event and maybe animate it happening
 
-save(splits_data, file = "data/splits_data.Rdata")
+save(splits_data, file = "SplitsPlot/data/splits_data.Rdata")
 save(spatial_data, file = "data/spatial_data.Rdata")
 save(game_sim_data, file = "BaseballGame/data/game_sim.Rdata")
 save(game_sim_data, file = "data/game_sim.csv")

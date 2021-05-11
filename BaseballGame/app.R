@@ -282,7 +282,6 @@ shinyApp(ui = ui, server = server)
 #   Outs
 #   HBP, Walks
 #   Score (the score is x-y, can you save the 9th)
-#   Difficulty? Different scores?
-#   plotly
 #   restart batter next -> better
 #   restart inning
+#   BLOG STUFF: publish the apps, write blog stuff 

@@ -83,7 +83,7 @@ server <- function(input, output){
     # Create plot
     plot <- ggplot(battingPlot) +
       geom_point(aes(x = player_name, color = split, y = val,
-                     text = paste0("<b>", str_to_title(split), ":</b> ", 
+                     text = paste0("<b>", toupper(split), ":</b> ", 
                                    str_pad(round(val, 3), width = 5, pad = "0", side = "right")))) +
       facet_wrap(~stat) +
       labs(x = "", y = "Value of Stat") +
@@ -99,4 +99,4 @@ server <- function(input, output){
 
 shinyApp(ui = ui, server = server)
 
-# TODO: hovertext when ave/slg == 0 or 1
+# TODO: hovertext when avg/slg == 0 or 1

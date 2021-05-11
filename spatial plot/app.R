@@ -19,15 +19,15 @@ spatial_data <- spatial_data %>%
                           (36<angle & angle <54) ~ "3",
                           (54<angle & angle <72) ~ "4",
                           (72<angle & angle <90) ~ "5")) %>%
-  mutate(hit_out  = case_when(str_detect(events,"out") ~ "Out",
-                                      str_detect(events,"error") ~ "Out",
-                                      str_detect(events,"play") ~ "Out",
-                                      str_detect(events,"out") ~ "Out",
+  mutate(hit_out  = case_when(str_detect(events,"out") ~ "Out/Sac",
+                                      str_detect(events,"error") ~ "Out/Sac",
+                                      str_detect(events,"play") ~ "Out/Sac",
+                                      str_detect(events,"out") ~ "Out/Sac",
                                       str_detect(events,"run") ~ "Hit",
                                       str_detect(events,"single") ~ "Hit",
                                       str_detect(events,"triple") ~ "Hit",
                                       str_detect(events,"double") ~ "Hit",
-                                      str_detect(events,"fly") ~ "Out")) %>%
+                                      str_detect(events,"fly") ~ "Out/Sac")) %>%
   mutate(events = case_when(str_detect(events,"out") ~ "Out",
                             str_detect(events,"error") ~ "Error",
                             str_detect(events,"play") ~ "Out",
@@ -36,7 +36,8 @@ spatial_data <- spatial_data %>%
                             str_detect(events,"single") ~ "1B",
                             str_detect(events,"triple") ~ "3B",
                             str_detect(events,"double") ~ "2B",
-                            str_detect(events,"fly") ~ "Sacrifice")) 
+                            str_detect(events,"fly") ~ "Sacrifice"))%>%
+  filter(!is.na(events))
 
 
 testSpatial <- spatial_data %>%
@@ -130,7 +131,8 @@ server <- function(input, output) {
     theme_void() +
     coord_fixed(ratio = 1.3) +
     scale_y_reverse() +
-    geom_point(data = dataSpray, aes(x = hc_x, y=hc_y, color = events)) 
+    geom_point(data = dataSpray, aes(x = hc_x, y=hc_y, color = events)) +
+    labs(fill = "Percentage of Batted Balls", events = "Outcome")
     
   plot
     

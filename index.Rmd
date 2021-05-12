@@ -249,11 +249,11 @@ Spray charts of this type are not just a visualization, but a tool currently bei
 Most compelling baseball questions follow an almost identical syntactic form: Does player X do better or worse when Y? In baseball vernacular, this is an inquiry into splits. 
 
 We compared a hitter’s batting average and slugging percentage based on splits that we decided were some of the most interesting:
-Home versus away
-Count (3-1, 0-2, etc.)
-Pitcher’s throwing hand (lefty vs. righty)
-Runners on base (if so, how many)
-Pitch type (fastball, curveball, etc.)
+- Home versus away
+- Count (3-1, 0-2, etc.)
+- Pitcher’s throwing hand (lefty vs. righty)
+- Runners on base (if so, how many)
+- Pitch type (fastball, curveball, etc.)
 
 Because our data set contained rows of every pitch thrown in 2019, without general at-bat by at-bat data, it took a fair share of nifty wrangling to calculate batting average and slugging percentage based on these splits. Here’s how we did it:
 

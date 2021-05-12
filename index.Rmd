@@ -45,7 +45,7 @@ Since the package is made for professional use, the data was very specific about
 
 While the data-set was huge vertically (716,497 rows, or pitches), it was large horizontally as well. Each pitch had 93 corresponding columns, including spin axis, location of the pitch’s release point, speed of the batter, location of the fielders, to name a few. There was also only a small subset of variables needed for each task we wanted to achieve, but for easier asynchronous collaboration, three datasets were created: spatial data for visualization, splits data between batting variables, and pitching/hitting data for our very own “Win the Pennant!” baseball game. Some datasets were also reformatted by pivoting columns to achieve the correct layout of data to easily make visualizations using default data formatting requirements in the ggplot library. 
 
-
+   
 ```{r, include = FALSE}
 
 #compiled data from baseballr

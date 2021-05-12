@@ -274,11 +274,6 @@ So let’s say you find yourself in a 3-1 count. You must decide what the best p
 
 Good luck!
 
-Game here
-
-This required a lot of cheeky code. To see exactly how we coded the game, see below, it’s all included.
-
-Code here
 
 
 <iframe height="1000" width="100%" frameborder="no" src="https://stefanwg.shinyapps.io/BaseballGame/"> </iframe>`

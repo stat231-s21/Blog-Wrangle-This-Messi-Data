@@ -81,7 +81,7 @@ Then, using these divisions and their intersections with our generic baseball fi
 Note that the map of the field is a 
 
 
-<iframe height="400" width="100%" frameborder="no" src="https://willie-cohen.shinyapps.io/spraycharts/"> </iframe>`
+<iframe height="500" width="100%" frameborder="no" src="https://willie-cohen.shinyapps.io/spraycharts/"> </iframe>`
 
 
 Altuve’s chart is one of a right handed pull hitter, who bats most of his balls to the left side of the field. In order to shift against Altuve, a team would take almost the opposite position of our example above, positioning the third baseman on the left field line, and the second baseman to the left of second base. Conversely, Joey Gallo hits an even larger proportion to the right side of the field and so a team would be likely to take a shift similar to the one above when he is hitting. Between the two extremes is Tim Anderson, whose hit frequency is similar across both sides of the field. Given this, a traditional, straight-up defense would be better suited to defend when he is at the plate. 
@@ -112,7 +112,7 @@ INSERT CODE HERE
 
 Our shiny app provides the user with interactivity to choose any batter from the 2019 season and see how their batting average and slugging percentage change based on any of the selected inputs.
 
-<iframe height="400" width="100%" frameborder="no" src="https://esamuels.shinyapps.io/SplitsPlot/"> </iframe>`
+<iframe height="500" width="100%" frameborder="no" src="https://esamuels.shinyapps.io/SplitsPlot/"> </iframe>`
 
 As you can see, many of these splits do provide meaningful insight. For example, “hitters counts” do really exist. Almost all hitters are significantly better in high-ball/low-strike counts than they are in low-ball/high-strike counts. The reason why is fairly intuitive: when there are many balls and few strikes, pitchers have more pressure to throw pitches they can control into the strike zone, giving hitters not only a clue as to what pitch may come, but the freedom to lay-off the pitch if it’s not perfect. Additionally, with a bit of work we can see that righty hitters generally fare better against lefty pitchers and lefty hitters are more successful against righty pitchers. 
 

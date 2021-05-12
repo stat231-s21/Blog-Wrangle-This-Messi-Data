@@ -15,35 +15,40 @@ library(shiny)
 library(ggplot2)
 library(plotly)
 library(baseballr)
+library(plotly)
+library(GeomMLBStadiums)
+
+load("data/savant_data_filtered.Rdata")
+load("data/spatial_data.Rdata")
 ```
 
 ## Introduction
 
 For more than one hundred years, baseball has been a numbers game. We currently have access to hundreds of thousands of statistics dating back to the 1800s, presenting the rare opportunity to compare a slugger like Babe Ruth (a pitcher and hitter during the roaring ‘20s) to Mike Trout (the best ball-player today). In 2015, however, the MLB introduced a new method to track statistics: Statcast.
 
-What makes Statcast so exciting to baseball nerds is its novelty. For centuries, fans used the same statistics to compare players. Yet, all of these statistics were calculated based upon only the final result of a given play.Statcast is unique as it tracks the movement of the game. With Statcast, we can examine a ball’s rotations per minute, launch angle and exit velocity, allowing us to calculate the exact position a ball landed on a field and how a given event or outcome on the baseball field came to be. 
+What makes Statcast so exciting to baseball nerds is its novelty. For centuries, fans used the same statistics to compare players. Yet, all of these statistics were calculated based upon only the final result of a given play. Statcast is unique as it tracks the movement of the game. With Statcast, we can examine a ball’s rotations per minute, launch angle and exit velocity, allowing us to calculate the exact position a ball landed on a field and how a given event or outcome on the baseball field came to be. 
 
-For this project, we wanted to analyze this statcast data to provide insight on a number of decades-old baseball questions: Do certain players have a tendency to hit the ball to a certain location? If so, which players do so and where do they tend to hit the ball? Do “hitters-counts” really exist? That is, does a hitter really have better statistics when the count is in his favor? Can we generalize this information to all hitters? Do players hit better at home versus away? What pitches are most effective to certain hitters? 
+For this project, we wanted to analyze this Statcast data to provide insight on a number of decades-old baseball questions: Do certain players have a tendency to hit the ball to a certain location? If so, which players do so and where do they tend to hit the ball? Do “hitters-counts” really exist? That is, does a hitter really have better statistics when the count is in his favor? Can we generalize this information to all hitters? Do players hit better at home versus away? What pitches are most effective to certain hitters? 
 
 The list of questions goes on, but our data wrangling must start somewhere. We hope the following interactive plots and games are both fun and insightful. Enjoy!
 
 ## Data Sources and Wrangling
 
-The “baseballr” package contains functions that allow for easy scraping of MLB’s Statcast data, which is hosted on the website [link] https://baseballsavant.mlb.com/. Since the Statcast tool tracks statistics for every single pitch thrown, and there are upwards of 500,000 pitches thrown each season, we decided to only focus on the most recent full season for our analysis to make the data set more manageable. 
+The “baseballr” package contains functions that allow for easy scraping of MLB’s Statcast data, which is hosted on the website https://baseballsavant.mlb.com/. Since the Statcast tool tracks statistics for every single pitch thrown, and there are upwards of 500,000 pitches thrown each season, we decided to only focus on the most recent full season for our analysis to make the data set more manageable. 
 
 Since the package is made for professional use, the data was very specific about some categorical variables. For example, the “event” variable listed the normal “single”, “double”, “strike-out” events, but also some events like “sac_fly_double_play” and “field_error”, which we had to combine together to make the data more granular. 
 
 While the data-set was huge vertically (716,497 rows, or pitches), it was large horizontally as well. Each pitch had 93 corresponding columns, including spin axis, location of the pitch’s release point, speed of the batter, location of the fielders, to name a few. There was also only a small subset of variables needed for each task we wanted to achieve, but for easier asynchronous collaboration, three datasets were created: spatial data for visualization, splits data between batting variables, and pitching/hitting data for our very own “Win the Pennant!” baseball game. Some datasets were also reformatted by pivoting columns to achieve the correct layout of data to easily make visualizations using default data formatting requirements in the ggplot library. 
 
 
-```{r, echo = FALSE}
+```{r, include = FALSE}
 
 #compiled data from baseballr
-# savant_data = data.frame()
-# for (month in 4:9) {
+#  savant_data = data.frame()
+#  for (month in 4:9) {
 #   for (day in 1:31) {
 #     if (day == 31 & month %in% c(4, 6, 9)) {
-#       next
+#        next
 #     }
 #     print(paste(day, month))
 #     date <- paste("2019", str_pad(month, 2, pad = "0"), str_pad(day, 2, pad = "0"), sep = "-")
@@ -55,8 +60,8 @@ While the data-set was huge vertically (716,497 rows, or pitches), it was large 
 # save(savant_data, file="data/savant_data.Rdata")
 # 
 # savant_data_filtered <- savant_data %>%
-#   select(pitch_type, game_date, release_speed, release_pos_x, release_pos_y, player_name, 
-#          pitcher...8, events, zone, stand, p_throws, type, hit_location, balls, strikes, on_3b, 
+#   select(pitch_type, game_date, release_speed, release_pos_x, release_pos_y, player_name,
+#          pitcher...8, events, zone, stand, p_throws, type, hit_location, balls, strikes, on_3b,
 #          on_2b, on_1b, outs_when_up, inning, hc_x, hc_y, launch_speed, launch_angle, effective_speed,
 #          estimated_ba_using_speedangle, estimated_woba_using_speedangle, pitch_number, pitch_name,
 #          bat_score, fld_score, inning_topbot)
@@ -72,10 +77,152 @@ Over the past decade in the MLB, there has been a drastic change in how teams ap
 
 Below is a diagram of a traditional defense versus a shift for a hitter that hits the ball to right field. Though there are numerous examples of different shifts, the one below is likely the first you would see in watching an MLB game today. But, in order to accurately design your shifts, you must first analyze where players hit the ball and at what frequency. In our analysis, we used spatial data combined with our statcast data to do just that. 
 
-<a href="https://imgbb.com/"><img src="https://i.ibb.co/2s93Whb/Screen-Shot-2021-05-12-at-4-57-58-PM.png" alt="Screen-Shot-2021-05-12-at-4-57-58-PM" border="0"></a><br /><a target='_blank' href='https://freeonlinedice.com/'>9 sided die</a><br />
-<a href="https://ibb.co/HYbhZJV"><img src="https://i.ibb.co/K7fKn1X/Screen-Shot-2021-05-12-at-4-58-07-PM.png" alt="Screen-Shot-2021-05-12-at-4-58-07-PM" border="0"></a><br /><a target='_blank' href='https://freeonlinedice.com/'>9 sided die</a><br />
+<a href="https://imgbb.com/"><img src="https://i.ibb.co/2s93Whb/Screen-Shot-2021-05-12-at-4-57-58-PM.png" alt="Screen-Shot-2021-05-12-at-4-57-58-PM" border="0"></a><br /><a target='_blank'
 
-Using the “GeomMLBStadiums” package, which contains stadium outlines positioned based upon Statcast’s xy-coordinate system for batted balls, we were able to use some simple trigonometry to divide a generic baseball field into five sections. (insert code)
+<a href="https://ibb.co/HYbhZJV"><img src="https://i.ibb.co/K7fKn1X/Screen-Shot-2021-05-12-at-4-58-07-PM.png" alt="Screen-Shot-2021-05-12-at-4-58-07-PM" border="0"></a><br /><a target='_blank' 
+
+Using the “GeomMLBStadiums” package, which contains stadium outlines positioned based upon Statcast’s xy-coordinate system for batted balls, we were able to use some simple trigonometry to divide a generic baseball field into five sections. 
+
+```{r, include = FALSE}
+#Shiny app code
+spatial_data <- spatial_data %>%
+  mutate(angle = ifelse(hc_x < 125, 
+                        atan((208 - hc_y) / (125 - hc_x)) * 180 / pi - 45, 
+                        135 - atan((208 - hc_y) / (hc_x - 125)) * 180 / pi)) %>%
+  mutate(zone = case_when((angle < 18) ~ "1",
+                          (18<angle & angle<36) ~ "2", 
+                          (36<angle & angle <54) ~ "3",
+                          (54<angle & angle <72) ~ "4",
+                          (72<angle & angle <90) ~ "5")) %>%
+  mutate(hit_out  = case_when(str_detect(events,"out") ~ "Out/Sac",
+                                      str_detect(events,"error") ~ "Out/Sac",
+                                      str_detect(events,"play") ~ "Out/Sac",
+                                      str_detect(events,"out") ~ "Out/Sac",
+                                      str_detect(events,"run") ~ "Hit",
+                                      str_detect(events,"single") ~ "Hit",
+                                      str_detect(events,"triple") ~ "Hit",
+                                      str_detect(events,"double") ~ "Hit",
+                                      str_detect(events,"fly") ~ "Out/Sac")) %>%
+  mutate(events = case_when(str_detect(events,"out") ~ "Out",
+                            str_detect(events,"error") ~ "Error",
+                            str_detect(events,"play") ~ "Out",
+                            str_detect(events,"out") ~ "Out",
+                            str_detect(events,"run") ~ "HR",
+                            str_detect(events,"single") ~ "1B",
+                            str_detect(events,"triple") ~ "3B",
+                            str_detect(events,"double") ~ "2B",
+                            str_detect(events,"fly") ~ "Sacrifice"))%>%
+  filter(!is.na(events))
+
+
+#create the outline for our field so we can make choropleth map 
+spatialPts <- data.frame(x = c("125", "30", "48",
+                               "125", "48", "90", 
+                               "125", "90", "160",
+                               "125", "160", "203",
+                               "125", "203", "220"),
+                            y = c("208", "100", "60", 
+                                  "208", "60", "20",
+                                  "208", "20", "20",
+                                  "208", "20", "60",
+                                  "208", "60", "100"),
+                            zone = c("1", "1", "1", 
+                                     "2", "2", "2", 
+                                     "3", "3", "3", 
+                                     "4", "4", "4",
+                                     "5", "5", "5"))
+
+spatialPts <- spatialPts %>%
+  mutate(x = as.numeric(x), y = as.numeric(y))
+
+
+playerChoices <- unique(spatial_data$player_name)
+hitOutChoices <- unique(spatial_data$hit_out)
+hitChoices <- unique(spatial_data$events)
+
+ui <- fluidPage(
+  
+ titlePanel("Player Spray Charts"),
+ sidebarLayout(
+   sidebarPanel(
+     selectizeInput(inputId  = "player",
+                 label = "Choose Player to View",
+                 choices = playerChoices,
+                 selected = "Altuve, Jose"),
+     checkboxGroupInput(inputId = "hitLocations",
+                   label = "Include Outcome(s)",
+                   choices = hitOutChoices,
+                   selected = "Hit",
+                   inline = TRUE)),
+   mainPanel(
+     plotOutput(outputId = "spray")
+   )
+ )
+  
+)
+
+
+server <- function(input, output) {
+  
+  output$spray <- renderPlot({
+  
+    #calculate the proportion hit to each zone based on what player is chosen
+  dataSpatial <- spatial_data %>%
+    filter(player_name %in% input$player) %>%
+    group_by(zone) %>%
+    summarize(zoneNum = n()) %>%
+    distinct() %>%
+    group_by(zone) %>%
+    summarize(zoneNum = zoneNum, zoneTot = sum(zoneNum)) %>%
+    mutate(zone = as.factor(zone), zoneProp = 100*zoneTot/sum(zoneTot)) %>%
+    right_join(spatialPts)
+  
+  dataSpray <- spatial_data %>%
+    filter(player_name %in% input$player) %>%
+    filter(hit_out %in% input$hitLocations)
+  
+  plot <- ggplot(dataSpatial) +
+    geom_polygon(aes(x = x, y = y, group = zone
+                     , fill = zoneProp), color = "black") +
+    theme_void() +
+    coord_fixed(ratio = 1.3) +
+    scale_y_reverse() +
+    geom_point(data = dataSpray, aes(x = hc_x, y=hc_y, color = events)) +
+    scale_fill_distiller(palette = "Greens", trans = "reverse") +
+    labs(fill = "Percentage of Batted Balls", color = "Outcome")
+    
+  plot
+    
+  
+
+  })
+}
+ 
+shinyApp(ui = ui, server = server)
+
+
+
+```
+
+
+
+```{r}
+test_Spatial <- spatial_data %>%
+  filter(player_name == "Judge, Aaron" | player_name == "Trout, Mike") 
+
+g <- ggplot(data = test_Spatial, aes(x = hc_x, y = hc_y, color = zone)) +
+    geom_point() +
+    geom_mlb_stadium(stadium_ids = "generic", stadium_segments = "all") +
+    scale_y_reverse() +
+    geom_segment(aes(x = 125, y = 208, xend = 48, yend = 208 - tan(63*pi/180)*77)) +
+    geom_segment(aes(x = 125, y = 208, xend = 95, yend =  208 - tan(81*pi/180)*30)) +
+    geom_segment(aes(x = 125, y = 208, xend = 155, yend = 208 + tan(99*pi/180)*30)) +
+    geom_segment(aes(x = 125, y = 208, xend = 202, yend = 208 + tan(117*pi/180)*77)) 
+
+g
+
+```
+
 
 Then, using these divisions and their intersections with our generic baseball field, we were able to construct a data frame with coordinates associated with each of our five zones, for use in a spatial data plot. The shiny app below allows you to select any batter from the 2019 season and view their own individual spray chart, which plots the frequency at which that batter hit balls into each of our five designated zones. In relation to our discussion of the shift, I’d ask one to consider three spray charts of Jose Altuve, Joey Gallo, and Tim Anderson. 
 
@@ -89,12 +236,6 @@ Altuve’s chart is one of a right handed pull hitter, who bats most of his ball
 
 Spray charts of this type are not just a visualization, but a tool currently being used across the majors that impacts the game we see on the field. 
 
-
-
-
-```{r}
-
-```
 
 ## Splits Comparisons
 
@@ -152,6 +293,11 @@ You should test out updating your GitHub Pages website:
 - knit `index.Rmd` 
 - commit and push BOTH the `index.Rmd` and the `index.html` files
 - go to https://stat231-s21.github.io/Blog-Wrangle-This-Messi-Data/ to see the published test document (this is publicly available!)
+
+
+
+
+
 
 ## Including code and plots
 

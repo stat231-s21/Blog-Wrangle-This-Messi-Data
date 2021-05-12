@@ -79,7 +79,9 @@ server <- function(input, output){
       pivot_wider(names_from = input$split, values_from = c("average", "slugging")) %>%
       pivot_longer(cols = columns,
                    names_to = "stat", values_to = "val") %>%
-      separate(stat, into = c("stat","split"), sep = "_")# %>%
+      separate(stat, into = c("stat","split"), sep = "_") 
+    
+    # %>%
      # rename("Batting Average" = average, "Slugging Percentage" = slugging)
     
     # Create plot

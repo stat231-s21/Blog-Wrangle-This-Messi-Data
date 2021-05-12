@@ -23,7 +23,6 @@ load("data/spatial_data.Rdata")
 ```
 
 ## Introduction
-test
 
 For more than one hundred years, baseball has been a numbers game. We currently have access to hundreds of thousands of statistics dating back to the 1800s, presenting the rare opportunity to compare a slugger like Babe Ruth (a pitcher and hitter during the roaring ‘20s) to Mike Trout (the best ball-player today). In 2015, however, the MLB introduced a new method to track statistics: Statcast.
 
@@ -230,8 +229,6 @@ Using the “GeomMLBStadiums” package, which contains stadium outlines positio
 
 Then, using these divisions and their intersections with our generic baseball field, we were able to construct a data frame with coordinates associated with each of our five zones, for use in a spatial data plot. The shiny app below allows you to select any batter from the 2019 season and view their own individual spray chart, which plots the frequency at which that batter hit balls into each of our five designated zones. In relation to our discussion of the shift, I’d ask one to consider three spray charts of Jose Altuve, Joey Gallo, and Tim Anderson. 
 
-Note that the map of the field is a 
-
 
 <iframe height="500" width="100%" frameborder="no" src="https://willie-cohen.shinyapps.io/spraycharts/"> </iframe>`
 
@@ -254,7 +251,6 @@ Pitch type (fastball, curveball, etc.)
 
 Because our data set contained rows of every pitch thrown in 2019, without general at-bat by at-bat data, it took a fair share of nifty wrangling to calculate batting average and slugging percentage based on these splits. Here’s how we did it:
 
-INSERT CODE HERE
 
 Our shiny app provides the user with interactivity to choose any batter from the 2019 season and see how their batting average and slugging percentage change based on any of the selected inputs.
 
@@ -279,85 +275,4 @@ Good luck!
 
 
 <iframe height="1000" width="100%" frameborder="no" src="https://stefanwg.shinyapps.io/BaseballGame/"> </iframe>`
-
-
-```{r}
-```
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For example, you can include **Bold** and _Italic_ and `Code` text.  For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-You should test out updating your GitHub Pages website:
-
-- clone your group's blog project repo in RStudio
-- update "Your Project Title Here" to a new title in the YAML header
-- knit `index.Rmd` 
-- commit and push BOTH the `index.Rmd` and the `index.html` files
-- go to https://stat231-s21.github.io/Blog-Wrangle-This-Messi-Data/ to see the published test document (this is publicly available!)
-
-
-
-
-
-
-## Including code and plots
-
-You can embed code as normal, for example:
-
-```{r cars}
-summary(cars)
-```
-
-Let's clean up the format of that output:
-
-```{r pretty, echo=FALSE, warning=FALSE, message=FALSE}
-library(kableExtra)
-summary(cars) %>%
-  kable(col.names = c("Speed", "Distance")
-        , row.names = F) %>%
-  kable_styling(bootstrap_options = "striped"
-                , full_width = F) %>%
-  row_spec(0, bold = T, underline = T) %>%
-  column_spec(1:2, width = "1.5in") 
-```
-
-In a study from the 1920s, fifty cars were used to see how the speed of the car and the distance taken to stop were related.  Speeds ranged between `r min(cars$speed)` and `r max(cars$speed)` mph.  Distances taken to stop ranged between `r min(cars$dist)` and `r max(cars$dist)` feet, with the middle 50% falling between `r as.numeric(quantile(cars$dist)[2])` and `r as.numeric(quantile(cars$dist)[4])` feet.  
-
-You can also embed plots as normal, for example:
-
-```{r figure1, echo=FALSE}
-ggplot(data = cars, aes(x = speed, y = dist)) + 
-  geom_point() + 
-  labs(x = "Speed of car (mph)"
-       , y = "Distance taken to stop (ft)"
-       , title = "cars data (1920s)")
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-
-## Including links and images
-
-You can include [Links](https://www.datadreaming.org/post/r-markdown-theme-gallery/) and images ![team logo](https://raw.githubusercontent.com/stat231-s21/Blog-Wrangle-This-Messi-Data/main/images/s1g1-sports.jpeg)
-
-You can embed a gif.
-
-![pugs](https://media.giphy.com/media/XHVmD4RyXgSjd8aUMb/giphy.gif)
-
-# You can even create tabs if you want! {.tabset .tabset-fade .tabset-pills}
-
-## Bulleted list
-
-You can make a bulleted list like this:
-
-- item 1
-- item 2
-- item 3
-
-
-## Numbered list
-
-You can make a numbered list like this
-
-1. First thing I want to say
-2. Second thing I want to say
-3. Third thing I want to say
 

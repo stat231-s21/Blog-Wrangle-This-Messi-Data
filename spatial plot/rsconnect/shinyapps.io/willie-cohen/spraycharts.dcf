@@ -1,0 +1,12 @@
+name: spraycharts
+title: spraycharts
+username:
+account: willie-cohen
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4121656
+bundleId: 4590984
+url: https://willie-cohen.shinyapps.io/spraycharts/
+when: 1620840119.00996
+asMultiple: FALSE
+asStatic: FALSE

@@ -79,9 +79,9 @@ Over the past decade in the MLB, there has been a drastic change in how teams ap
 
 Below is a diagram of a traditional defense versus a shift for a hitter that hits the ball to right field. Though there are numerous examples of different shifts, the one below is likely the first you would see in watching an MLB game today. But, in order to accurately design your shifts, you must first analyze where players hit the ball and at what frequency. In our analysis, we used spatial data combined with our statcast data to do just that. 
 
-<a href="https://imgbb.com/"><img src="https://i.ibb.co/2s93Whb/Screen-Shot-2021-05-12-at-4-57-58-PM.png" alt="Screen-Shot-2021-05-12-at-4-57-58-PM" border="0"></a><br /><a target='_blank'
+<a href="https://imgbb.com/"><img src="https://i.ibb.co/2s93Whb/Screen-Shot-2021-05-12-at-4-57-58-PM.png" alt="Screen-Shot-2021-05-12-at-4-57-58-PM" border="0"></a><br />
 
-<a href="https://ibb.co/HYbhZJV"><img src="https://i.ibb.co/K7fKn1X/Screen-Shot-2021-05-12-at-4-58-07-PM.png" alt="Screen-Shot-2021-05-12-at-4-58-07-PM" border="0"></a><br /><a target='_blank' 
+<a href="https://ibb.co/HYbhZJV"><img src="https://i.ibb.co/K7fKn1X/Screen-Shot-2021-05-12-at-4-58-07-PM.png" alt="Screen-Shot-2021-05-12-at-4-58-07-PM" border="0"></a><br /> 
 
 Using the “GeomMLBStadiums” package, which contains stadium outlines positioned based upon Statcast’s xy-coordinate system for batted balls, we were able to use some simple trigonometry to divide a generic baseball field into five sections. 
 

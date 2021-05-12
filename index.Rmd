@@ -21,7 +21,7 @@ library(baseballr)
 
 For more than one hundred years, baseball has been a numbers game. We currently have access to hundreds of thousands of statistics dating back to the 1800s, presenting the rare opportunity to compare a slugger like Babe Ruth (a pitcher and hitter during the roaring ‘20s) to Mike Trout (the best ball-player today). In 2015, however, the MLB introduced a new method to track statistics: Statcast.
 
-What makes Statcast so exciting to baseball nerds is its novelty. For centuries, fans used the same statistics to compare players. Yet, all of these statistics were calculated based upon only the final result of a given play. Statcast is unique as it tracks the movement of the game. With Statcast, we can examine a ball’s rotations per minute, launch angle and exit velocity, allowing us to calculate the exact position a ball landed on a field and how a given event or outcome on the baseball field came to be. 
+What makes Statcast so exciting to baseball nerds is its novelty. For centuries, fans used the same statistics to compare players. Yet, all of these statistics were calculated based upon only the final result of a given play.Statcast is unique as it tracks the movement of the game. With Statcast, we can examine a ball’s rotations per minute, launch angle and exit velocity, allowing us to calculate the exact position a ball landed on a field and how a given event or outcome on the baseball field came to be. 
 
 For this project, we wanted to analyze this statcast data to provide insight on a number of decades-old baseball questions: Do certain players have a tendency to hit the ball to a certain location? If so, which players do so and where do they tend to hit the ball? Do “hitters-counts” really exist? That is, does a hitter really have better statistics when the count is in his favor? Can we generalize this information to all hitters? Do players hit better at home versus away? What pitches are most effective to certain hitters? 
 
@@ -72,7 +72,8 @@ Over the past decade in the MLB, there has been a drastic change in how teams ap
 
 Below is a diagram of a traditional defense versus a shift for a hitter that hits the ball to right field. Though there are numerous examples of different shifts, the one below is likely the first you would see in watching an MLB game today. But, in order to accurately design your shifts, you must first analyze where players hit the ball and at what frequency. In our analysis, we used spatial data combined with our statcast data to do just that. 
 
-INSERT IMAGES
+<a href="https://imgbb.com/"><img src="https://i.ibb.co/2s93Whb/Screen-Shot-2021-05-12-at-4-57-58-PM.png" alt="Screen-Shot-2021-05-12-at-4-57-58-PM" border="0"></a><br /><a target='_blank' href='https://freeonlinedice.com/'>9 sided die</a><br />
+<a href="https://ibb.co/HYbhZJV"><img src="https://i.ibb.co/K7fKn1X/Screen-Shot-2021-05-12-at-4-58-07-PM.png" alt="Screen-Shot-2021-05-12-at-4-58-07-PM" border="0"></a><br /><a target='_blank' href='https://freeonlinedice.com/'>9 sided die</a><br />
 
 Using the “GeomMLBStadiums” package, which contains stadium outlines positioned based upon Statcast’s xy-coordinate system for batted balls, we were able to use some simple trigonometry to divide a generic baseball field into five sections. (insert code)
 

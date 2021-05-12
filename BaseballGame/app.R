@@ -4,6 +4,7 @@ library(plotly)
 library(shinyjs)
 library(stringr)
 library(GeomMLBStadiums)
+library(shinyalert)
 
 # Load dataset
 load("data/game_sim.Rdata")
@@ -32,6 +33,7 @@ computer_runs <- 4
 
 ui <- fluidPage(
     useShinyjs(),
+    useShinyalert(),
 
     # Application title
     titlePanel("Win the Pennant!"),
@@ -80,6 +82,14 @@ ui <- fluidPage(
 #####################################
 
 server <- function(input, output) {
+    # Show welcome message
+    shinyalert(title = "Welcome to our baseball game!", 
+               type = "info", confirmButtonText = "Play Ball!",
+               text = paste0("You are currently winning ", user_runs, " - ",
+                             computer_runs, " in the bottom of the ninth! ", 
+                             "Your goal is to complete the save by picking the pitcher's ",
+                             "throwing arm, the batter's hitting side, ",
+                             "and each pitch. Good luck!"))
     
     # List of reactive Values
     rv <- reactiveValues(plot = NULL,
@@ -236,7 +246,7 @@ server <- function(input, output) {
         rv$plot = NULL
         rv$ball_in_play = data.frame()
         rv$runs = computer_runs 
-        bases = c(FALSE, FALSE, FALSE, TRUE)
+        rv$bases = c(FALSE, FALSE, FALSE, TRUE)
     })
     
     #####################################

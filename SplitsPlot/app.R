@@ -38,7 +38,8 @@ ui <- fluidPage(
       radioButtons(
         inputId = "split",
         label = "Choose data to split by",
-        choices = c("home_away", "p_throws", "runners_on", "count", "pitch_type"),
+        choices = list("Home/Away"= "home_away", "Pitcher Side" = "p_throws", "Runners on" = "runners_on", 
+                      "Count" = "count", "Pitch Type" = "pitch_type"),
         selected = "home_away",
         inline = FALSE,
       
@@ -78,15 +79,22 @@ server <- function(input, output){
       pivot_wider(names_from = input$split, values_from = c("average", "slugging")) %>%
       pivot_longer(cols = columns,
                    names_to = "stat", values_to = "val") %>%
-      separate(stat, into = c("stat","split"), sep = "_")
+      separate(stat, into = c("stat","split"), sep = "_")# %>%
+     # rename("Batting Average" = average, "Slugging Percentage" = slugging)
     
     # Create plot
+   #stat_names <- list("Batting Average", "Slugging Percentage")
+    
+   # stat_labeller <- function(variable,value){
+      #return(stat_names[value])
+   # }
+    
     plot <- ggplot(battingPlot) +
       geom_point(aes(x = player_name, color = split, y = val,
                      text = paste0("<b>", toupper(split), ":</b> ", 
                                    str_pad(round(val, 3), width = 5, pad = "0", side = "right")))) +
       facet_wrap(~stat) +
-      labs(x = "", y = "Value of Stat") +
+      labs(x = "", y = "Value of Stat", color = "Split") +
       theme(axis.text.x = element_text(angle = 45, hjust = 1))
     
     ggplotly(plot, tooltip = "text") %>%

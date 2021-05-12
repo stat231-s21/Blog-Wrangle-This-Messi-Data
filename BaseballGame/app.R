@@ -110,10 +110,10 @@ server <- function(input, output) {
         if (outcome %in% c("walk", "hit_by_pitch")) {
             if (!rv$bases[1]) {
                 rv$bases[1] <- TRUE
-            } else if (!rv$bases) {
+            } else if (!rv$bases[2]) {
                 rv$bases[1] <- TRUE
                 rv$bases[2] <- TRUE
-            } else if (!rv$bases) {
+            } else if (!rv$bases[3]) {
                 rv$bases[1] <- TRUE
                 rv$bases[2] <- TRUE
                 rv$bases[3] <- TRUE

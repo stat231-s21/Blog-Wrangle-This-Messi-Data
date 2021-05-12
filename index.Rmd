@@ -26,7 +26,12 @@ load("data/spatial_data.Rdata")
 
 For more than one hundred years, baseball has been a numbers game. We currently have access to hundreds of thousands of statistics dating back to the 1800s, presenting the rare opportunity to compare a slugger like Babe Ruth (a pitcher and hitter during the roaring ‘20s) to Mike Trout (the best ball-player today). In 2015, however, the MLB introduced a new method to track statistics: Statcast.
 
-What makes Statcast so exciting to baseball nerds is its novelty. For centuries, fans used the same statistics to compare players. Yet, all of these statistics were calculated based upon only the final result of a given play. Statcast is unique as it tracks the movement of the game. With Statcast, we can examine a ball’s rotations per minute, launch angle and exit velocity, allowing us to calculate the exact position a ball landed on a field and how a given event or outcome on the baseball field came to be. 
+What makes Statcast so exciting to baseball nerds is its novelty. For centuries, fans used the same statistics to compare players. Yet, all of these statistics were calculated based upon the final result of a given play. Statcast is unique as it tracks the movement of the game. With Statcast, we can examine a ball’s rotations per minute, launch angle and exit velocity, allowing us to calculate the exact position a ball landed on a field, or track ball flight paths like this:
+
+(https://www.google.com/url?sa=i&url=https%3A%2F%2Fgiphy.com%2Fexplore%2Fstatcast&psig=AOvVaw3rIM0MPB5zdJGnq-E1P3dd&ust=1620942566762000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCJCn6vWPxfACFQAAAAAdAAAAABAD)
+
+More simply, Statcast helps us understand how a given event or outcome on the baseball field came to be instead of just observing what that event or outcome was. 
+
 
 For this project, we wanted to analyze this Statcast data to provide insight on a number of decades-old baseball questions: Do certain players have a tendency to hit the ball to a certain location? If so, which players do so and where do they tend to hit the ball? Do “hitters-counts” really exist? That is, does a hitter really have better statistics when the count is in his favor? Can we generalize this information to all hitters? Do players hit better at home versus away? What pitches are most effective to certain hitters? 
 
@@ -34,7 +39,7 @@ The list of questions goes on, but our data wrangling must start somewhere. We h
 
 ## Data Sources and Wrangling
 
-The “baseballr” package contains functions that allow for easy scraping of MLB’s Statcast data, which is hosted on the website https://baseballsavant.mlb.com/. Since the Statcast tool tracks statistics for every single pitch thrown, and there are upwards of 500,000 pitches thrown each season, we decided to only focus on the most recent full season for our analysis to make the data set more manageable. 
+The “baseballr” package contains functions that allow for easy scraping of MLB’s Statcast data, which is hosted on the website (https://baseballsavant.mlb.com/). Since the Statcast tool tracks statistics for every single pitch thrown, and there are upwards of 500,000 pitches thrown each season, we decided to only focus on the most recent full season for our analysis to make the data set more manageable. 
 
 Since the package is made for professional use, the data was very specific about some categorical variables. For example, the “event” variable listed the normal “single”, “double”, “strike-out” events, but also some events like “sac_fly_double_play” and “field_error”, which we had to combine together to make the data more granular. 
 
@@ -229,6 +234,7 @@ Using the “GeomMLBStadiums” package, which contains stadium outlines positio
 
 Then, using these divisions and their intersections with our generic baseball field, we were able to construct a data frame with coordinates associated with each of our five zones, for use in a spatial data plot. The shiny app below allows you to select any batter from the 2019 season and view their own individual spray chart, which plots the frequency at which that batter hit balls into each of our five designated zones. In relation to our discussion of the shift, I’d ask one to consider three spray charts of Jose Altuve, Joey Gallo, and Tim Anderson. 
 
+Note that the map of the field is a generic field and the hitting statistics come from a wide range of fields which is why we see some balls that appear to be over the fence which are not home runs. Also, Statcast tracks location for non-home runs by where the first fielder makes contact with the ball which is why some balls that appear to be foul are hits. 
 
 <iframe height="500" width="100%" frameborder="no" src="https://willie-cohen.shinyapps.io/spraycharts/"> </iframe>`
 

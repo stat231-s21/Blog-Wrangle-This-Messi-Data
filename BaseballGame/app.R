@@ -22,6 +22,9 @@ strikezone <- data.frame(x=c(-0.85, 0.85, 0.85, -0.85),
                          y=c(1.6, 1.6, 3.5, 3.5), 
                          xend = c(0.85, 0.85, -0.85, -0.85), 
                          yend = c(1.6, 3.5, 3.5, 1.6))
+# Starting score
+user_runs <- 5
+computer_runs <- 4
 
 #####################################
 #   UI
@@ -31,7 +34,7 @@ ui <- fluidPage(
     useShinyjs(),
 
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("Win the Pennant!"),
 
     # Sidebar with radio buttons, buttons, and text
     sidebarLayout(
@@ -53,13 +56,19 @@ ui <- fluidPage(
                           inline = FALSE),
             actionButton("throwPitch",
                          label = "Throw Pitch!"),
-            actionButton("newAtBat",
-                         label = "Restart At-Bat"),
-            textOutput("countName")
+            tags$br(), tags$br(),
+            textOutput("countName"),
+            tags$br(),
+            disabled(actionButton("newAtBat",
+                         label = "Next At-Bat")),
+            tags$br(), tags$br(),
+            disabled(actionButton("newInning",
+                         label = "Next Inning")),
         ),
 
         # Main panel with graphs
         mainPanel(
+            fluidRow(column(12, align = "center", htmlOutput("score"))),
             plotOutput("sprayChart"),
             plotOutput("strikezone")
         )
@@ -78,7 +87,8 @@ server <- function(input, output) {
                          pitches_thrown = data.frame(), 
                          num_strikes = 0,
                          num_balls = 0,
-                         num_outs = 1,
+                         num_outs = 0,
+                         runs = computer_runs,
                          atBatDescription = "",
                          bases = c(FALSE, FALSE, FALSE, TRUE))
     
@@ -87,23 +97,41 @@ server <- function(input, output) {
     #####################################
     
     updateBases <- function(outcome) {
-        event <- case_when(outcome == "single" ~ 1,
-                           outcome == "field_error" ~ 1,
-                           outcome == "double" ~ 2,
-                           outcome == "triple" ~ 3,
-                           outcome == "home_run" ~ 4,
-                           TRUE ~ 0)
-        
-        newBases <-c(event, ifelse(rv$bases[1], 1 + event, 0), 
-                     ifelse(rv$bases[2], 2 + event, 0), ifelse(rv$bases[3], 3 +event, 0))
-        
-        runs <- 0
-        rv$bases <- c(F,F,F,T)
-        for(i in newBases) {
-            if (i >= 4) runs <- runs + 1
-            else if (i>0) rv$bases[i] = T
+        if (outcome %in% c("walk", "hit_by_pitch")) {
+            if (!rv$bases[1]) {
+                rv$bases[1] <- TRUE
+            } else if (!rv$bases) {
+                rv$bases[1] <- TRUE
+                rv$bases[2] <- TRUE
+            } else if (!rv$bases) {
+                rv$bases[1] <- TRUE
+                rv$bases[2] <- TRUE
+                rv$bases[3] <- TRUE
+            } else {
+                rv$runs <- rv$runs + 1
+            }
+        } else {
+            event <- case_when(outcome == "single" ~ 1,
+                               outcome == "field_error" ~ 1,
+                               outcome == "double" ~ 2,
+                               outcome == "triple" ~ 3,
+                               outcome == "home_run" ~ 4,
+                               TRUE ~ 0)
+            
+            print(outcome)
+            print(event)
+            if (event == 0 || outcome == "field_error") rv$num_outs <- rv$num_outs + 1
+            
+            newBases <-c(event, ifelse(rv$bases[1], 1 + event, 0), 
+                         ifelse(rv$bases[2], 2 + event, 0), ifelse(rv$bases[3], 3 +event, 0))
+            
+            runs <- 0
+            rv$bases <- c(F,F,F,T)
+            for(i in newBases) {
+                if (i >= 4) rv$runs <-rv$runs + 1
+                else if (i>0) rv$bases[i] = T
+            }
         }
-        
     }
     
     #####################################
@@ -116,8 +144,7 @@ server <- function(input, output) {
             disable("pitcherThrows") 
             disable("batterStands")
         }
-    
-    
+
         data <- game_sim_data %>%
             filter(strikes == rv$num_strikes, balls == rv$num_balls, 
                    outs_when_up == rv$num_outs, pitch_name == input$pitchThrown,
@@ -129,6 +156,7 @@ server <- function(input, output) {
             rv$num_balls <- rv$num_balls + 1
             if(rv$num_balls == 4){
                 disable("throwPitch")
+                enable("newAtBat")
                 rv$atBatDescription = sub(",", ".", str_extract(pitch$des, ".*?[a-z0-9][,.]"))
             }
         } else if (pitch$type == "S") {
@@ -137,17 +165,24 @@ server <- function(input, output) {
                                             rv$num_balls, " - ", rv$num_strikes, ".")
             } else {
                 rv$num_strikes <- rv$num_strikes + 1
-                #TODO: ask about color changes
                 if (rv$num_strikes == 3){
                     disable("throwPitch")
+                    enable("newAtBat")
                     rv$atBatDescription = sub(",", ".", str_extract(pitch$des, ".*?[a-z0-9][,.]"))
+                    rv$num_outs <- rv$num_outs + 1
                 }
             }
             
         } else {
             rv$atBatDescription = sub(",", ".", str_extract(pitch$des, ".*?[a-z0-9][,.]"))
             disable("throwPitch")
+            enable("newAtBat")
             updateBases(pitch$events)
+        }
+        
+        if (rv$num_outs == 3) {
+            disable("newAtBat")
+            enable("newInning")
         }
         
         if (!is.na(pitch$hc_y)) {
@@ -174,12 +209,34 @@ server <- function(input, output) {
         enable("pitcherThrows")
         enable("batterStands")
         enable("throwPitch")
+        disable("newAtBat")
         rv$num_strikes = 0
         rv$num_balls = 0
         rv$atBatDescription = ""
         rv$pitches_thrown = data.frame()
         rv$plot = NULL
         rv$ball_in_play = data.frame()
+    })
+    
+    #####################################
+    #   Restart Inning: When button clicked    
+    #####################################
+    
+    observeEvent(input$newInning, {
+        enable("pitcherThrows")
+        enable("batterStands")
+        enable("throwPitch")
+        disable("newAtBat")
+        disable("newInning")
+        rv$num_strikes = 0
+        rv$num_balls = 0
+        rv$num_outs = 0
+        rv$atBatDescription = ""
+        rv$pitches_thrown = data.frame()
+        rv$plot = NULL
+        rv$ball_in_play = data.frame()
+        rv$runs = computer_runs 
+        bases = c(FALSE, FALSE, FALSE, TRUE)
     })
     
     #####################################
@@ -273,15 +330,20 @@ server <- function(input, output) {
             rv$atBatDescription
         )
     })
+    
+    #####################################
+    #   Output: Text for score
+    #####################################
+    
+    output$score <- renderText({
+        current_state <- case_when(rv$runs > user_runs ~ "lost ",
+                                   rv$runs == user_runs ~ "are tied ",
+                                   rv$runs < user_runs ~ "are winning ")
+        paste0("<b>You ", current_state, user_runs, " - ", 
+               rv$runs, "! Don't blow the lead!</b>")
+    })
 }
 
 # Run the application 
 shinyApp(ui = ui, server = server)
 
-# TODO:
-#   Outs
-#   HBP, Walks
-#   Score (the score is x-y, can you save the 9th)
-#   restart batter next -> better
-#   restart inning
-#   BLOG STUFF: publish the apps, write blog stuff 

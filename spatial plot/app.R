@@ -40,14 +40,6 @@ spatial_data <- spatial_data %>%
   filter(!is.na(events))
 
 
-testSpatial <- spatial_data %>%
-  group_by(zone, player_name) %>%
-  summarize(zoneTot = n()) %>%
-  distinct() %>%
-  mutate(zone = as.factor(zone))
-
-
-
 #the code was used to find coordinates of our spatialPts dataset (was com)
 
 #g <- ggplot(data = testSpatial, aes(x = hc_x, y = hc_y, color = zone)) +
@@ -59,7 +51,7 @@ testSpatial <- spatial_data %>%
 #geom_segment(aes(x = 125, y = 208, xend = 155, yend = 208 + tan(99*pi/180)*30)) +
 #geom_segment(aes(x = 125, y = 208, xend = 202, yend = 208 + tan(117*pi/180)*77)) 
 
-#create the outline for our field so we can make chlorpleth map 
+#create the outline for our field so we can make choropleth map 
 spatialPts <- data.frame(x = c("125", "30", "48",
                                "125", "48", "90", 
                                "125", "90", "160",
@@ -138,8 +130,6 @@ server <- function(input, output) {
   plot
     
   
- #ggplotly(plot, tooltip = "all") %>%
-   #layout(hovermode = 'closest')
 
   })
 }

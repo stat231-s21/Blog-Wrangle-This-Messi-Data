@@ -225,6 +225,17 @@ server <- function(input, output) {
         rv$pitches_thrown = data.frame()
         rv$plot = NULL
         rv$ball_in_play = data.frame()
+        
+        if (rv$runs > user_runs) {
+            rv$num_outs = 0
+            rv$runs = computer_runs
+            rv$bases = c(FALSE, FALSE, FALSE, TRUE)
+            shinyalert(title = "Game over :(", 
+                       type = "error", confirmButtonText = "Try again!",
+                       text = paste0("You lost ", computer_runs, " - ",
+                                     user_runs, "."))
+            
+        } 
     })
     
     #####################################
@@ -232,6 +243,19 @@ server <- function(input, output) {
     #####################################
     
     observeEvent(input$newInning, {
+        if (rv$runs < user_runs) { # User wins!
+            shinyalert(title = "Congrats! You win!", 
+                       type = "success", confirmButtonText = "Play Again!",
+                       text = paste0("You successfully kept the lead, winning by a score of ",
+                                     user_runs, " - ", rv$runs, "."))
+        } else if (rv$runs == user_runs) {# Tie!
+            shinyalert(title = "It was a draw.", 
+                       type = "warning", confirmButtonText = "Play Again!",
+                       text = paste0("Hey, at least you didn't lose. ",
+                                     "The game is going to extras, tied at ",  rv$runs, 
+                                     "You'll get the save next time!"))
+        }
+        
         enable("pitcherThrows")
         enable("batterStands")
         enable("throwPitch")
@@ -246,6 +270,7 @@ server <- function(input, output) {
         rv$ball_in_play = data.frame()
         rv$runs = computer_runs 
         rv$bases = c(FALSE, FALSE, FALSE, TRUE)
+        
     })
     
     #####################################

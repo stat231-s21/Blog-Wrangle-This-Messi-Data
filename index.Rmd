@@ -29,6 +29,13 @@ The list of questions goes on, but our data wrangling must start somewhere. We h
 
 ## Data Sources and Wrangling
 
+The “baseballr” package contains functions that allow for easy scraping of MLB’s Statcast data, which is hosted on the website [link] https://baseballsavant.mlb.com/. Since the Statcast tool tracks statistics for every single pitch thrown, and there are upwards of 500,000 pitches thrown each season, we decided to only focus on the most recent full season for our analysis to make the data set more manageable. 
+
+Since the package is made for professional use, the data was very specific about some categorical variables. For example, the “event” variable listed the normal “single”, “double”, “strike-out” events, but also some events like “sac_fly_double_play” and “field_error”, which we had to combine together to make the data more granular. 
+
+While the data-set was huge vertically (716,497 rows, or pitches), it was large horizontally as well. Each pitch had 93 corresponding columns, including spin axis, location of the pitch’s release point, speed of the batter, location of the fielders, to name a few. There was also only a small subset of variables needed for each task we wanted to achieve, but for easier asynchronous collaboration, three datasets were created: spatial data for visualization, splits data between batting variables, and pitching/hitting data for our very own “Win the Pennant!” baseball game. Some datasets were also reformatted by pivoting columns to achieve the correct layout of data to easily make visualizations using default data formatting requirements in the ggplot library. 
+
+
 ```{r, echo = FALSE}
 
 #compiled data from baseballr
@@ -73,7 +80,9 @@ Then, using these divisions and their intersections with our generic baseball fi
 
 Note that the map of the field is a 
 
-[insert shiny app]
+
+<iframe height="400" width="100%" frameborder="no" src="https://willie-cohen.shinyapps.io/spraycharts/"> </iframe>`
+
 
 Altuve’s chart is one of a right handed pull hitter, who bats most of his balls to the left side of the field. In order to shift against Altuve, a team would take almost the opposite position of our example above, positioning the third baseman on the left field line, and the second baseman to the left of second base. Conversely, Joey Gallo hits an even larger proportion to the right side of the field and so a team would be likely to take a shift similar to the one above when he is hitting. Between the two extremes is Tim Anderson, whose hit frequency is similar across both sides of the field. Given this, a traditional, straight-up defense would be better suited to defend when he is at the plate. 
 
@@ -103,7 +112,7 @@ INSERT CODE HERE
 
 Our shiny app provides the user with interactivity to choose any batter from the 2019 season and see how their batting average and slugging percentage change based on any of the selected inputs.
 
-EMBED SHINY APP HERE
+<iframe height="400" width="100%" frameborder="no" src="https://esamuels.shinyapps.io/SplitsPlot/"> </iframe>`
 
 As you can see, many of these splits do provide meaningful insight. For example, “hitters counts” do really exist. Almost all hitters are significantly better in high-ball/low-strike counts than they are in low-ball/high-strike counts. The reason why is fairly intuitive: when there are many balls and few strikes, pitchers have more pressure to throw pitches they can control into the strike zone, giving hitters not only a clue as to what pitch may come, but the freedom to lay-off the pitch if it’s not perfect. Additionally, with a bit of work we can see that righty hitters generally fare better against lefty pitchers and lefty hitters are more successful against righty pitchers. 
 
@@ -128,7 +137,9 @@ This required a lot of cheeky code. To see exactly how we coded the game, see be
 Code here
 
 
-<iframe height="400" width="100%" frameborder="no" src="https://stefanwg.shinyapps.io/BaseballGame/"> </iframe>`
+<iframe height="1000" width="100%" frameborder="no" src="https://stefanwg.shinyapps.io/BaseballGame/"> </iframe>`
+
+
 ```{r}
 ```
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For example, you can include **Bold** and _Italic_ and `Code` text.  For more details on using R Markdown see <http://rmarkdown.rstudio.com>.

@@ -1,6 +1,6 @@
 ---
-title: "Your Project Title Here"
-author: "Your Names Here"
+title: "Wrangle That Messi Data"
+author: "Willie Cohen, Ethan Samuels, Vaibhav Shah, Stefan Walzer-Goldfeld"
 date: "Add a date"
 output:
   rmdformats::readthedown:

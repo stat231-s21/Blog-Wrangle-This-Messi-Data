@@ -110,10 +110,10 @@ server <- function(input, output) {
         if (outcome %in% c("walk", "hit_by_pitch")) {
             if (!rv$bases[1]) {
                 rv$bases[1] <- TRUE
-            } else if (!rv$bases) {
+            } else if (!rv$bases[2]) {
                 rv$bases[1] <- TRUE
                 rv$bases[2] <- TRUE
-            } else if (!rv$bases) {
+            } else if (!rv$bases[3]) {
                 rv$bases[1] <- TRUE
                 rv$bases[2] <- TRUE
                 rv$bases[3] <- TRUE
@@ -127,9 +127,7 @@ server <- function(input, output) {
                                outcome == "triple" ~ 3,
                                outcome == "home_run" ~ 4,
                                TRUE ~ 0)
-            
-            print(outcome)
-            print(event)
+        
             if (event == 0 || outcome == "field_error") rv$num_outs <- rv$num_outs + 1
             
             newBases <-c(event, ifelse(rv$bases[1], 1 + event, 0), 
@@ -168,6 +166,7 @@ server <- function(input, output) {
                 disable("throwPitch")
                 enable("newAtBat")
                 rv$atBatDescription = sub(",", ".", str_extract(pitch$des, ".*?[a-z0-9][,.]"))
+                updateBases(pitch$events)
             }
         } else if (pitch$type == "S") {
             if (rv$num_strikes == 2 && pitch$description == "foul") {
@@ -226,6 +225,17 @@ server <- function(input, output) {
         rv$pitches_thrown = data.frame()
         rv$plot = NULL
         rv$ball_in_play = data.frame()
+        
+        if (rv$runs > user_runs) {
+            rv$num_outs = 0
+            rv$runs = computer_runs
+            rv$bases = c(FALSE, FALSE, FALSE, TRUE)
+            shinyalert(title = "Game over :(", 
+                       type = "error", confirmButtonText = "Try again!",
+                       text = paste0("You lost ", computer_runs, " - ",
+                                     user_runs, "."))
+            
+        } 
     })
     
     #####################################
@@ -233,6 +243,19 @@ server <- function(input, output) {
     #####################################
     
     observeEvent(input$newInning, {
+        if (rv$runs < user_runs) { # User wins!
+            shinyalert(title = "Congrats! You win!", 
+                       type = "success", confirmButtonText = "Play Again!",
+                       text = paste0("You successfully kept the lead, winning by a score of ",
+                                     user_runs, " - ", rv$runs, "."))
+        } else if (rv$runs == user_runs) {# Tie!
+            shinyalert(title = "It was a draw.", 
+                       type = "warning", confirmButtonText = "Play Again!",
+                       text = paste0("Hey, at least you didn't lose. ",
+                                     "The game is going to extras, tied at ",  rv$runs, 
+                                     "You'll get the save next time!"))
+        }
+        
         enable("pitcherThrows")
         enable("batterStands")
         enable("throwPitch")
@@ -247,6 +270,7 @@ server <- function(input, output) {
         rv$ball_in_play = data.frame()
         rv$runs = computer_runs 
         rv$bases = c(FALSE, FALSE, FALSE, TRUE)
+        
     })
     
     #####################################
@@ -346,11 +370,10 @@ server <- function(input, output) {
     #####################################
     
     output$score <- renderText({
-        current_state <- case_when(rv$runs > user_runs ~ "lost ",
-                                   rv$runs == user_runs ~ "are tied ",
-                                   rv$runs < user_runs ~ "are winning ")
-        paste0("<b>You ", current_state, user_runs, " - ", 
-               rv$runs, "! Don't blow the lead!</b>")
+        score <- paste0(user_runs, " - ", rv$runs, "!")
+        case_when(rv$runs > user_runs ~ paste("<b>You lost", score, "Better luck next time!"),
+                  rv$runs == user_runs ~ paste("<b>You are tied", score, "Don't lose the game!"),
+                  rv$runs < user_runs ~ paste("<b>You are winning", score, "Don't blow the lead!"))
     })
 }
 

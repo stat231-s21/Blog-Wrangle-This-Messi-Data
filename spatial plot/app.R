@@ -92,7 +92,7 @@ ui <- fluidPage(
      selectizeInput(inputId  = "player",
                  label = "Choose Player to View",
                  choices = playerChoices,
-                 selected = "Stanton, Giancarlo"),
+                 selected = "Judge, Aaron"),
      checkboxGroupInput(inputId = "hitLocations",
                    label = "Include Outcome(s)",
                    choices = hitOutChoices,

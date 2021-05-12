@@ -132,7 +132,8 @@ server <- function(input, output) {
     coord_fixed(ratio = 1.3) +
     scale_y_reverse() +
     geom_point(data = dataSpray, aes(x = hc_x, y=hc_y, color = events)) +
-    labs(fill = "Percentage of Batted Balls", events = "Outcome")
+    scale_fill_distiller(palette = "Greens", trans = "reverse") +
+    labs(fill = "Percentage of Batted Balls", color = "Outcome")
     
   plot
     

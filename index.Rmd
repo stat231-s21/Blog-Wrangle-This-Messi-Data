@@ -14,12 +14,18 @@ library(tidyverse)
 library(shiny)
 library(ggplot2)
 library(plotly)
-library(GeomMLBStadiums)
 library(baseballr)
 ```
 
 ## Introduction
 
+For more than one hundred years, baseball has been a numbers game. We currently have access to hundreds of thousands of statistics dating back to the 1800s, presenting the rare opportunity to compare a slugger like Babe Ruth (a pitcher and hitter during the roaring ‘20s) to Mike Trout (the best ball-player today). In 2015, however, the MLB introduced a new method to track statistics: Statcast.
+
+What makes Statcast so exciting to baseball nerds is its novelty. For centuries, fans used the same statistics to compare players. Yet, all of these statistics were calculated based upon only the final result of a given play.Statcast is unique as it tracks the movement of the game. With Statcast, we can examine a ball’s rotations per minute, launch angle and exit velocity, allowing us to calculate the exact position a ball landed on a field and how a given event or outcome on the baseball field came to be. 
+
+For this project, we wanted to analyze this statcast data to provide insight on a number of decades-old baseball questions: Do certain players have a tendency to hit the ball to a certain location? If so, which players do so and where do they tend to hit the ball? Do “hitters-counts” really exist? That is, does a hitter really have better statistics when the count is in his favor? Can we generalize this information to all hitters? Do players hit better at home versus away? What pitches are most effective to certain hitters? 
+
+The list of questions goes on, but our data wrangling must start somewhere. We hope the following interactive plots and games are both fun and insightful. Enjoy!
 
 ## Data Sources and Wrangling
 
@@ -55,13 +61,72 @@ library(baseballr)
 
 ## Individual Player Spray Charts
 
+Over the past decade in the MLB, there has been a drastic change in how teams approach defense. Traditionally, teams maintained the same or very similar defensive structure regardless of batter, seen below. The only major deviations resulting due to the situation, such as “infield-in” with a runner on third and less than two outs or “no doubles” which plays the outfielders further back and the corner infielders closer to the foul-line, most often in 1-run or tie games in the late innings or extras. However, with more advanced data available, teams began to alter their defensive styles not based on situation, but by the player that is at bat. After all, if a player hits 75 percent of their batted balls to right or left field, it makes sense to move fielders away from their traditional positions towards these relative “hot zones”. Thus, the shift was born.
+
+Below is a diagram of a traditional defense versus a shift for a hitter that hits the ball to right field. Though there are numerous examples of different shifts, the one below is likely the first you would see in watching an MLB game today. But, in order to accurately design your shifts, you must first analyze where players hit the ball and at what frequency. In our analysis, we used spatial data combined with our statcast data to do just that. 
+
+INSERT IMAGES
+
+Using the “GeomMLBStadiums” package, which contains stadium outlines positioned based upon Statcast’s xy-coordinate system for batted balls, we were able to use some simple trigonometry to divide a generic baseball field into five sections. (insert code)
+
+Then, using these divisions and their intersections with our generic baseball field, we were able to construct a data frame with coordinates associated with each of our five zones, for use in a spatial data plot. The shiny app below allows you to select any batter from the 2019 season and view their own individual spray chart, which plots the frequency at which that batter hit balls into each of our five designated zones. In relation to our discussion of the shift, I’d ask one to consider three spray charts of Jose Altuve, Joey Gallo, and Tim Anderson. 
+
+Note that the map of the field is a 
+
+[insert shiny app]
+
+Altuve’s chart is one of a right handed pull hitter, who bats most of his balls to the left side of the field. In order to shift against Altuve, a team would take almost the opposite position of our example above, positioning the third baseman on the left field line, and the second baseman to the left of second base. Conversely, Joey Gallo hits an even larger proportion to the right side of the field and so a team would be likely to take a shift similar to the one above when he is hitting. Between the two extremes is Tim Anderson, whose hit frequency is similar across both sides of the field. Given this, a traditional, straight-up defense would be better suited to defend when he is at the plate. 
+
+Spray charts of this type are not just a visualization, but a tool currently being used across the majors that impacts the game we see on the field. 
+
+
+
+
 ```{r}
 
 ```
 
 ## Splits Comparisons
 
+Most compelling baseball questions follow an almost identical syntactic form: Does player X do better or worse when Y? In baseball vernacular, this is an inquiry into splits. 
+
+We compared a hitter’s batting average and slugging percentage based on splits that we decided were some of the most interesting:
+Home versus away
+Count (3-1, 0-2, etc.)
+Pitcher’s throwing hand (lefty vs. righty)
+Runners on base (if so, how many)
+Pitch type (fastball, curveball, etc.)
+
+Because our data set contained rows of every pitch thrown in 2019, without general at-bat by at-bat data, it took a fair share of nifty wrangling to calculate batting average and slugging percentage based on these splits. Here’s how we did it:
+
+INSERT CODE HERE
+
+Our shiny app provides the user with interactivity to choose any batter from the 2019 season and see how their batting average and slugging percentage change based on any of the selected inputs.
+
+EMBED SHINY APP HERE
+
+As you can see, many of these splits do provide meaningful insight. For example, “hitters counts” do really exist. Almost all hitters are significantly better in high-ball/low-strike counts than they are in low-ball/high-strike counts. The reason why is fairly intuitive: when there are many balls and few strikes, pitchers have more pressure to throw pitches they can control into the strike zone, giving hitters not only a clue as to what pitch may come, but the freedom to lay-off the pitch if it’s not perfect. Additionally, with a bit of work we can see that righty hitters generally fare better against lefty pitchers and lefty hitters are more successful against righty pitchers. 
+
+The stories that come out of the splits plot are endless, including Macro-trends that can be discovered by comparing the data of multiple players, as well as micro-trends that are specific to certain players (Mike Trout, for example, is extremely good at hitting sliders but relatively unsuccessful when it comes to hitting changeups).
+
+
+
 ## Game Simulator
+
+In what is certainly the most unorthodox component of our project, we built a game that -- using statcast data -- allows a user to face off against MLB hitters. The goal: can you retire the side, save the game, and win the pennant?
+
+To start an at-bat, you get to decide the throwing arm of the hitter as well as the hitting side of the batter. Once you do so, you are locked into the at-bat. From then on out, you must decide what pitches to use to get the hitter out. Our game sifts through all the inputs (pitcher-side, hitter-side, and count) and pulls a real pitch that occurred in the 2019 season at random that accommodates all of the inputs. 
+
+So let’s say you find yourself in a 3-1 count. You must decide what the best pitch to throw is. If you go with off-speed, the simulator is more likely to choose an event in which the pitcher throws a 3-1 ball, walking the hitter. But if you throw a fastball, the simulator is more likely to select an event in which the pitcher found the strike-zone and the batter racked up a hit. In other words, because this pulls real events that correspond to the game’s inputs, you must deal with the same problems that catchers do when they are deciding what pitch to throw. 
+
+Good luck!
+
+Game here
+
+This required a lot of cheeky code. To see exactly how we coded the game, see below, it’s all included.
+
+Code here
+
 
 <iframe height="400" width="100%" frameborder="no" src="https://stefanwg.shinyapps.io/BaseballGame/"> </iframe>`
 ```{r}

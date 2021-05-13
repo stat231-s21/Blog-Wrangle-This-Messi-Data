@@ -282,3 +282,10 @@ Good luck!
 
 <iframe height="1000" width="100%" frameborder="no" src="https://stefanwg.shinyapps.io/BaseballGame/"> </iframe>`
 
+
+
+## Conclusion
+
+Baseball is a sport that involves significant amounts of luck. You could hit the ball really hard, but if it’s right at a fielder, then you don’t get credit for doing almost everything right. Even over the course of an entire season, some players can be incredibly lucky. One way to extend this analysis would be to use more seasons to get a larger sample size. This would especially help for the splits visualizations, where players might only reach a 3-2 count a handful of times over the course of  a single season. The statistics we are looking at, like average, slugging percentage, and the type of hit, are also very simple statistics. Since Statcast was introduced in 2015, the vast array of new data has been used to develop much better statistics to measure player’s skill (barrels, xWOBA, and Hard Hit %, to name a few). To truly answer our questions, we would be better off diving into the more advanced statistics, which are both more descriptive of a player’s skill and more predictive of a player’s future success.
+
+

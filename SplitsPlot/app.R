@@ -39,7 +39,7 @@ ui <- fluidPage(
         inputId = "split",
         label = "Choose data to split by",
         choices = list("Home/Away"= "home_away", "Pitcher Side" = "p_throws", "Runners on" = "runners_on", 
-                      "Count" = "count", "Pitch Type" = "pitch_type"),
+                      "Count" = "count", "Pitch Type" = "pitch_name"),
         selected = "home_away",
         inline = FALSE,
       
@@ -108,5 +108,3 @@ server <- function(input, output){
 }
 
 shinyApp(ui = ui, server = server)
-
-# TODO: hovertext when avg/slg == 0 or 1

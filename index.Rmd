@@ -92,6 +92,12 @@ Using the “GeomMLBStadiums” package, which contains stadium outlines positio
 
 ```{r, include = FALSE}
 #Shiny app code
+
+
+#the wrangling below finds the angle of each point relative to the left edge of the field and then
+#splits them into 5 zones of equal size (all 18 degrees wide)
+
+
 # spatial_data <- spatial_data %>%
 #   mutate(angle = ifelse(hc_x < 125, 
 #                         atan((208 - hc_y) / (125 - hc_x)) * 180 / pi - 45, 

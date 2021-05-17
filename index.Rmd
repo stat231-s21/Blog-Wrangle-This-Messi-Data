@@ -17,7 +17,6 @@ library(plotly)
 library(baseballr)
 library(plotly)
 #library(GeomMLBStadiums)
-
 load("data/savant_data_filtered.Rdata")
 load("data/spatial_data.Rdata")
 ```
@@ -46,108 +45,33 @@ Since the package is made for professional use, the data was very specific about
 While the data-set was huge vertically (716,497 rows, or pitches), it was large horizontally as well. Each pitch had 93 corresponding columns, including spin axis, location of the pitch’s release point, speed of the batter, location of the fielders, to name a few. There was also only a small subset of variables needed for each task we wanted to achieve, but for easier asynchronous collaboration, three datasets were created: spatial data for visualization, splits data between batting variables, and pitching/hitting data for our very own “Win the Pennant!” baseball game. Some datasets were also reformatted by pivoting columns to achieve the correct layout of data to easily make visualizations using default data formatting requirements in the ggplot library. 
 
    
-```{r scrape-data, include = FALSE, eval = FALSE}
-
-# Code to scrape data from baseball savant using baseballr package
-# Code is from savant_scraping.R
-
-library(baseballr)
-library(stringr)
-library(dplyr)
-
-savant_data <- data.frame()
-year <- "2019"
-# Scrape data for every day
-for (month in 4:9) {
-  for (day in 1:31) {
-    if (day == 31 & month %in% c(4, 6, 9)) {
-       next
-    }
-    print(paste(day, month))
-    date <- paste("2019", str_pad(month, 2, pad = "0"), str_pad(day, 2, pad = "0"), sep = "-")
-    data <- scrape_statcast_savant(date, date)
-    savant_data <- rbind(savant_data, data)
-  }
-}
-
-# Save original dataset
-save(savant_data, file="data/savant_data.Rdata")
-
-# Create and save filtered dataset
-savant_data_filtered <- savant_data %>%
-  select(pitch_type, game_date, release_speed, release_pos_x, release_pos_y, player_name,
-         pitcher...8, events, zone, stand, p_throws, type, hit_location, balls, strikes, on_3b,
-         on_2b, on_1b, outs_when_up, inning, hc_x, hc_y, launch_speed, launch_angle, effective_speed,
-         estimated_ba_using_speedangle, estimated_woba_using_speedangle, pitch_number, pitch_name,
-         bat_score, fld_score, inning_topbot)
-
-save(savant_data_filtered, file="data/savant_data_filtered.Rdata")
-
-
+```{r, include = FALSE}
+#compiled data from baseballr
+#  savant_data = data.frame()
+#  for (month in 4:9) {
+#   for (day in 1:31) {
+#     if (day == 31 & month %in% c(4, 6, 9)) {
+#        next
+#     }
+#     print(paste(day, month))
+#     date <- paste("2019", str_pad(month, 2, pad = "0"), str_pad(day, 2, pad = "0"), sep = "-")
+#     data <- scrape_statcast_savant(date, date)
+#     savant_data <- rbind(savant_data, data)
+#   }
+# }
+# 
+# save(savant_data, file="data/savant_data.Rdata")
+# 
+# savant_data_filtered <- savant_data %>%
+#   select(pitch_type, game_date, release_speed, release_pos_x, release_pos_y, player_name,
+#          pitcher...8, events, zone, stand, p_throws, type, hit_location, balls, strikes, on_3b,
+#          on_2b, on_1b, outs_when_up, inning, hc_x, hc_y, launch_speed, launch_angle, effective_speed,
+#          estimated_ba_using_speedangle, estimated_woba_using_speedangle, pitch_number, pitch_name,
+#          bat_score, fld_score, inning_topbot)
+# 
+# save(savant_data_filtered, file="data/savant_data_filtered.Rdata")
 ```
 
-```{r data-wrangling, include=FALSE, eval=FALSE}
-# Code to wrangle data into datasets for different plots
-# Code is from data_wrangling.R
-
-load("data/savant_data_filtered.Rdata")
-load("data/savant_data.Rdata")
-library(tidyverse)
-library(ggplot2)
-
-# Create data set for spatial splots 
-spatial_data <- savant_data_filtered %>%
-  filter(events %in% c("field_out", "single", "double", "home_run", "sac_fly",
-                         "sac_bunt_double_play", "force_out", "grounded_into_double_play",
-                         "field_error", "fielders_choice", "double_play", "triple",
-                         "sac_bunt", "fielders_choice_out", "sac_fly_double_play",
-                         "triple_play"),
-         !is.na(hc_x), !is.na(hc_y)) %>%
-  select(player_name, hc_x, hc_y, events, stand, launch_speed, launch_angle) %>%
-  mutate(angle = ifelse(hc_x < 125, 
-                        atan((208 - hc_y) / (125 - hc_x)) * 180 / pi - 45, 
-                        135 - atan((208 - hc_y) / (hc_x - 125)) * 180 / pi))
-
-# Create data set for splits plots
-splits_data <- savant_data_filtered %>%
-  filter(events %in% c("field_out", "single", "double", "home_run", "sac_fly",
-                        "sac_bunt_double_play", "force_out", "grounded_into_double_play",
-                        "field_error", "fielders_choice", "double_play", "triple",
-                        "sac_bunt", "fielders_choice_out", "sac_fly_double_play",
-                        "triple_play", "walk", "hit_by_pitch", "strikeout", "other_out", 
-                       "strikeout_double_play", "catcher_interf"),
-         balls != 4, strikes != 3) %>%
-  mutate(pitch_type = case_when(pitch_type == "KC" ~ "CU",
-                                TRUE ~ pitch_type),
-         pitch_name = case_when(pitch_name == "Knuckle Curve" ~ "Curveball",
-                                TRUE ~ pitch_name),) %>%
-  filter(pitch_type %in% c("FF", "CH", "SL", "FT", "SI", "CU", "FC")) %>%
-  select(player_name, events, pitch_type, pitch_name, p_throws, strikes, balls, on_1b, on_2b, on_3b,
-         inning_topbot) %>%
-  mutate(count = paste(balls, "-", strikes, sep = " "),
-         runners_on = ifelse(is.na(on_1b), 0, 1) + 
-                      ifelse(is.na(on_2b), 0, 1) +
-                      ifelse(is.na(on_3b), 0, 1),
-         home_away = ifelse(inning_topbot == "Top", "away", "home")) %>%
-  select(-inning_topbot)
-
-# Create data set for baseball game
-game_sim_data <- savant_data %>%
-  mutate(pitch_type = case_when(pitch_type == "KC" ~ "CU",
-                                TRUE ~ pitch_type),
-         pitch_name = case_when(pitch_name == "Knuckle Curve" ~ "Curveball",
-                                TRUE ~ pitch_name),
-         des = sub("Jr.", "Jr", des)) %>%
-  filter(pitch_type %in% c("FF", "CH", "SL", "FT", "SI", "CU", "FC")) %>%
-  select(player_name, pitch_type, pitch_name, events, stand, p_throws, strikes, balls, 
-         outs_when_up, on_1b, on_2b, on_3b, hc_x, hc_y, type, events, description, 
-         plate_z, plate_x, release_pos_x, release_pos_z, des)
-
-# Save data sets to folders inside respective shiny apps
-save(splits_data, file = "SplitsPlot/data/splits_data.Rdata")
-save(spatial_data, file = "spatial\ plot/data/spatial_data.Rdata")
-save(game_sim_data, file = "BaseballGame/data/game_sim.Rdata")
-```
 
 ## Individual Player Spray Charts
 
@@ -155,152 +79,158 @@ Over the past decade in the MLB, there has been a drastic change in how teams ap
 
 Below is a diagram of a traditional defense versus a shift for a hitter that hits the ball to right field. Though there are numerous examples of different shifts, the one below is likely the first you would see in watching an MLB game today. But, in order to accurately design your shifts, you must first analyze where players hit the ball and at what frequency. In our analysis, we used spatial data combined with our statcast data to do just that. 
 
+<center>
 <a href="https://imgbb.com/"><img src="https://i.ibb.co/2s93Whb/Screen-Shot-2021-05-12-at-4-57-58-PM.png" alt="Screen-Shot-2021-05-12-at-4-57-58-PM" border="0"></a><br />
+<\center>
 
+<center>
 <a href="https://ibb.co/HYbhZJV"><img src="https://i.ibb.co/K7fKn1X/Screen-Shot-2021-05-12-at-4-58-07-PM.png" alt="Screen-Shot-2021-05-12-at-4-58-07-PM" border="0"></a><br /> 
+<\center>
+
 
 Using the “GeomMLBStadiums” package, which contains stadium outlines positioned based upon Statcast’s xy-coordinate system for batted balls, we were able to use some simple trigonometry to divide a generic baseball field into five sections. 
 
-```{r spatial-plot-shiny-app, include = FALSE, eval=FALSE}
-# Code for Spatial Data shiny app
-# Code is in spatial\ plot/app.R
-
-
+```{r, include = FALSE}
+#Shiny app code
 #the wrangling below finds the angle of each point relative to the left edge of the field and then
 #splits them into 5 zones of equal size (all 18 degrees wide)
-
-
-spatial_data <- spatial_data %>%
-  mutate(angle = ifelse(hc_x < 125,
-                        atan((208 - hc_y) / (125 - hc_x)) * 180 / pi - 45,
-                        135 - atan((208 - hc_y) / (hc_x - 125)) * 180 / pi)) %>%
-  mutate(zone = case_when((angle < 18) ~ "1",
-                          (18<angle & angle<36) ~ "2",
-                          (36<angle & angle <54) ~ "3",
-                          (54<angle & angle <72) ~ "4",
-                          (72<angle & angle <90) ~ "5")) %>%
-  mutate(hit_out  = case_when(str_detect(events,"out") ~ "Out/Sac",
-                                      str_detect(events,"error") ~ "Out/Sac",
-                                      str_detect(events,"play") ~ "Out/Sac",
-                                      str_detect(events,"out") ~ "Out/Sac",
-                                      str_detect(events,"run") ~ "Hit",
-                                      str_detect(events,"single") ~ "Hit",
-                                      str_detect(events,"triple") ~ "Hit",
-                                      str_detect(events,"double") ~ "Hit",
-                                      str_detect(events,"fly") ~ "Out/Sac")) %>%
-  mutate(events = case_when(str_detect(events,"out") ~ "Out",
-                            str_detect(events,"error") ~ "Error",
-                            str_detect(events,"play") ~ "Out",
-                            str_detect(events,"out") ~ "Out",
-                            str_detect(events,"run") ~ "HR",
-                            str_detect(events,"single") ~ "1B",
-                            str_detect(events,"triple") ~ "3B",
-                            str_detect(events,"double") ~ "2B",
-                            str_detect(events,"fly") ~ "Sacrifice"))%>%
-  filter(!is.na(events))
-
-
-#create the outline for our field so we can make choropleth map
-spatialPts <- data.frame(x = c("125", "30", "48",
-                               "125", "48", "90",
-                               "125", "90", "160",
-                               "125", "160", "203",
-                               "125", "203", "220"),
-                            y = c("208", "100", "60",
-                                  "208", "60", "20",
-                                  "208", "20", "20",
-                                  "208", "20", "60",
-                                  "208", "60", "100"),
-                            zone = c("1", "1", "1",
-                                     "2", "2", "2",
-                                     "3", "3", "3",
-                                     "4", "4", "4",
-                                     "5", "5", "5"))
-
-spatialPts <- spatialPts %>%
-  mutate(x = as.numeric(x), y = as.numeric(y))
-
-
-playerChoices <- unique(spatial_data$player_name)
-hitOutChoices <- unique(spatial_data$hit_out)
-hitChoices <- unique(spatial_data$events)
-
-ui <- fluidPage(
-
- titlePanel("Player Spray Charts"),
- sidebarLayout(
-   sidebarPanel(
-     selectizeInput(inputId  = "player",
-                 label = "Choose Player to View",
-                 choices = playerChoices,
-                 selected = "Altuve, Jose"),
-     checkboxGroupInput(inputId = "hitLocations",
-                   label = "Include Outcome(s)",
-                   choices = hitOutChoices,
-                   selected = "Hit",
-                   inline = TRUE)),
-   mainPanel(
-     plotOutput(outputId = "spray")
-   )
- )
-
-)
-
-
-server <- function(input, output) {
-
-  output$spray <- renderPlot({
-
-    #calculate the proportion hit to each zone based on what player is chosen
-  dataSpatial <- spatial_data %>%
-    filter(player_name %in% input$player) %>%
-    group_by(zone) %>%
-    summarize(zoneNum = n()) %>%
-    distinct() %>%
-    group_by(zone) %>%
-    summarize(zoneNum = zoneNum, zoneTot = sum(zoneNum)) %>%
-    mutate(zone = as.factor(zone), zoneProp = 100*zoneTot/sum(zoneTot)) %>%
-    right_join(spatialPts)
-
-  dataSpray <- spatial_data %>%
-    filter(player_name %in% input$player) %>%
-    filter(hit_out %in% input$hitLocations)
-
-  plot <- ggplot(dataSpatial) +
-    geom_polygon(aes(x = x, y = y, group = zone
-                     , fill = zoneProp), color = "black") +
-    theme_void() +
-    coord_fixed(ratio = 1.3) +
-    scale_y_reverse() +
-    geom_point(data = dataSpray, aes(x = hc_x, y=hc_y, color = events)) +
-    scale_fill_distiller(palette = "Greens", trans = "reverse") +
-    labs(fill = "Percentage of Batted Balls", color = "Outcome")
-
-  plot
-
-  })
-}
-
-shinyApp(ui = ui, server = server)
+# spatial_data <- spatial_data %>%
+#   mutate(angle = ifelse(hc_x < 125, 
+#                         atan((208 - hc_y) / (125 - hc_x)) * 180 / pi - 45, 
+#                         135 - atan((208 - hc_y) / (hc_x - 125)) * 180 / pi)) %>%
+#   mutate(zone = case_when((angle < 18) ~ "1",
+#                           (18<angle & angle<36) ~ "2", 
+#                           (36<angle & angle <54) ~ "3",
+#                           (54<angle & angle <72) ~ "4",
+#                           (72<angle & angle <90) ~ "5")) %>%
+#   mutate(hit_out  = case_when(str_detect(events,"out") ~ "Out/Sac",
+#                                       str_detect(events,"error") ~ "Out/Sac",
+#                                       str_detect(events,"play") ~ "Out/Sac",
+#                                       str_detect(events,"out") ~ "Out/Sac",
+#                                       str_detect(events,"run") ~ "Hit",
+#                                       str_detect(events,"single") ~ "Hit",
+#                                       str_detect(events,"triple") ~ "Hit",
+#                                       str_detect(events,"double") ~ "Hit",
+#                                       str_detect(events,"fly") ~ "Out/Sac")) %>%
+#   mutate(events = case_when(str_detect(events,"out") ~ "Out",
+#                             str_detect(events,"error") ~ "Error",
+#                             str_detect(events,"play") ~ "Out",
+#                             str_detect(events,"out") ~ "Out",
+#                             str_detect(events,"run") ~ "HR",
+#                             str_detect(events,"single") ~ "1B",
+#                             str_detect(events,"triple") ~ "3B",
+#                             str_detect(events,"double") ~ "2B",
+#                             str_detect(events,"fly") ~ "Sacrifice"))%>%
+#   filter(!is.na(events))
+# 
+# 
+# #create the outline for our field so we can make choropleth map 
+# spatialPts <- data.frame(x = c("125", "30", "48",
+#                                "125", "48", "90", 
+#                                "125", "90", "160",
+#                                "125", "160", "203",
+#                                "125", "203", "220"),
+#                             y = c("208", "100", "60", 
+#                                   "208", "60", "20",
+#                                   "208", "20", "20",
+#                                   "208", "20", "60",
+#                                   "208", "60", "100"),
+#                             zone = c("1", "1", "1", 
+#                                      "2", "2", "2", 
+#                                      "3", "3", "3", 
+#                                      "4", "4", "4",
+#                                      "5", "5", "5"))
+# 
+# spatialPts <- spatialPts %>%
+#   mutate(x = as.numeric(x), y = as.numeric(y))
+# 
+# 
+# playerChoices <- unique(spatial_data$player_name)
+# hitOutChoices <- unique(spatial_data$hit_out)
+# hitChoices <- unique(spatial_data$events)
+# 
+# ui <- fluidPage(
+#   
+#  titlePanel("Player Spray Charts"),
+#  sidebarLayout(
+#    sidebarPanel(
+#      selectizeInput(inputId  = "player",
+#                  label = "Choose Player to View",
+#                  choices = playerChoices,
+#                  selected = "Altuve, Jose"),
+#      checkboxGroupInput(inputId = "hitLocations",
+#                    label = "Include Outcome(s)",
+#                    choices = hitOutChoices,
+#                    selected = "Hit",
+#                    inline = TRUE)),
+#    mainPanel(
+#      plotOutput(outputId = "spray")
+#    )
+#  )
+#   
+# )
+# 
+# 
+# server <- function(input, output) {
+#   
+#   output$spray <- renderPlot({
+#   
+#     #calculate the proportion hit to each zone based on what player is chosen
+#   dataSpatial <- spatial_data %>%
+#     filter(player_name %in% input$player) %>%
+#     group_by(zone) %>%
+#     summarize(zoneNum = n()) %>%
+#     distinct() %>%
+#     group_by(zone) %>%
+#     summarize(zoneNum = zoneNum, zoneTot = sum(zoneNum)) %>%
+#     mutate(zone = as.factor(zone), zoneProp = 100*zoneTot/sum(zoneTot)) %>%
+#     right_join(spatialPts)
+#   
+#   dataSpray <- spatial_data %>%
+#     filter(player_name %in% input$player) %>%
+#     filter(hit_out %in% input$hitLocations)
+#   
+#   plot <- ggplot(dataSpatial) +
+#     geom_polygon(aes(x = x, y = y, group = zone
+#                      , fill = zoneProp), color = "black") +
+#     theme_void() +
+#     coord_fixed(ratio = 1.3) +
+#     scale_y_reverse() +
+#     geom_point(data = dataSpray, aes(x = hc_x, y=hc_y, color = events)) +
+#     scale_fill_distiller(palette = "Greens", trans = "reverse") +
+#     labs(fill = "Percentage of Batted Balls", color = "Outcome")
+#     
+#   plot
+#     
+#   
+# 
+#   })
+# }
+#  
+# shinyApp(ui = ui, server = server)
+# 
+# 
 ```
 
-``` {r example-spatial-data, eval=FALSE}
-# This test plot was created in order to find the intersections of our 
-#     lines with the outlines of the stadium
-# This was done in order to construct our spatial data 
-#     set (titles "spatialPts" in the above code")
 
-judge_trout <- spatial_data %>%
-  filter(player_name == "Judge, Aaron" | player_name == "Trout, Mike")
 
-ggplot(data = judge_trout, aes(x = hc_x, y = hc_y, color = zone)) +
-    geom_point() +
-    geom_mlb_stadium(stadium_ids = "generic", stadium_segments = "all") +
-    scale_y_reverse() +
-    geom_segment(aes(x = 125, y = 208, xend = 48, yend = 208 - tan(63*pi/180)*77)) +
-    geom_segment(aes(x = 125, y = 208, xend = 95, yend =  208 - tan(81*pi/180)*30)) +
-    geom_segment(aes(x = 125, y = 208, xend = 155, yend = 208 + tan(99*pi/180)*30)) +
-    geom_segment(aes(x = 125, y = 208, xend = 202, yend = 208 + tan(117*pi/180)*77))
+
+``` {r}
+#this test plot was created in order to find the intersections of our lines with the outlines of the stadium
+#this was done in order to construct our spatial data set (titlds "spatialPts" in the above code")
+# test_Spatial <- spatial_data %>%
+#   filter(player_name == "Judge, Aaron" | player_name == "Trout, Mike") 
+# 
+# g <- ggplot(data = test_Spatial, aes(x = hc_x, y = hc_y, color = zone)) +
+#     geom_point() +
+#     geom_mlb_stadium(stadium_ids = "generic", stadium_segments = "all") +
+#     scale_y_reverse() +
+#     geom_segment(aes(x = 125, y = 208, xend = 48, yend = 208 - tan(63*pi/180)*77)) +
+#     geom_segment(aes(x = 125, y = 208, xend = 95, yend =  208 - tan(81*pi/180)*30)) +
+#     geom_segment(aes(x = 125, y = 208, xend = 155, yend = 208 + tan(99*pi/180)*30)) +
+#     geom_segment(aes(x = 125, y = 208, xend = 202, yend = 208 + tan(117*pi/180)*77)) 
+# 
+# g
 ```
 
 
@@ -313,8 +243,7 @@ Note that the map of the field is a generic field and the hitting statistics com
 
 Altuve’s chart is one of a right handed pull hitter, who bats most of his balls to the left side of the field. In order to shift against Altuve, a team would take almost the opposite position of our example above, positioning the third baseman on the left field line, and the second baseman to the left of second base. Conversely, Joey Gallo hits an even larger proportion to the right side of the field and so a team would be likely to take a shift similar to the one above when he is hitting. Between the two extremes is Tim Anderson, whose hit frequency is similar across both sides of the field. Given this, a traditional, straight-up defense would be better suited to defend when he is at the plate. 
 
-Spray charts of this type are not just a visualization, but a tool currently being used across the majors that impacts the game we see on the field. 
-
+Spray charts of this type are not just a visualization, but a tool currently being used across the majors that impacts the game we see on the field. Of course, the analysis conducted by Major League teams spans far past simply examining the spray chart for players from a singular season. In order to understand further how teams plan their defensive positions using Statcast statistics, metrics such as launch angle, average exit velocity, or more predicative statistics such as expected batting average would be the next steps in analysis. It is also difficult to generalize players' tendencies off of one year of data, as many factors including injuries or a team change can drastically alter the course of a player's season. This does not mean that more recent statistics are not important in understanding how to game plan against a certain player at the plate, rather that all results should be contextualized with experiences outside the batter's box. 
 
 ## Splits Comparisons
 
@@ -333,11 +262,6 @@ Because our data set contained rows of every pitch thrown in 2019, without gener
 Our shiny app provides the user with interactivity to choose any batter from the 2019 season and see how their batting average and slugging percentage change based on any of the selected inputs.
 
 <iframe height="500" width="100%" frameborder="no" src="https://esamuels.shinyapps.io/SplitsPlot/"> </iframe>`
-
-```{r splits-plot-shiny-app, include=FALSE, eval=FALSE}
-# Code for the splits plots shiny app
-# Code can be found at SplitsPlot/app.R
-```
 
 As you can see, many of these splits do provide meaningful insight. For example, “hitters counts” do really exist. Almost all hitters are significantly better in high-ball/low-strike counts than they are in low-ball/high-strike counts. The reason why is fairly intuitive: when there are many balls and few strikes, pitchers have more pressure to throw pitches they can control into the strike zone, giving hitters not only a clue as to what pitch may come, but the freedom to lay-off the pitch if it’s not perfect. Additionally, with a bit of work we can see that righty hitters generally fare better against lefty pitchers and lefty hitters are more successful against righty pitchers. 
 
@@ -359,397 +283,9 @@ Good luck!
 
 <iframe height="1000" width="100%" frameborder="no" src="https://stefanwg.shinyapps.io/BaseballGame/"> </iframe>`
 
-```{r baseball-game-shiny-app, include=FALSE, eval=FALSE}
-# Code for baseball game shiny app
-# Code can be found in BaseballGame/app.R
-
-library(shiny)
-library(tidyverse)
-library(plotly)
-library(shinyjs)
-library(stringr)
-library(GeomMLBStadiums)
-library(shinyalert)
-
-# Load dataset
-load("data/game_sim.Rdata")
-
-# List of pitch choices
-pitch_choices <- game_sim_data$pitch_name %>% unique()
-
-# Coordinates for drawing bases
-bases <- data.frame(x = c(155, 160, 155, 150, 125, 120, 125, 130,
-                          95, 90, 95, 100, 125, 120, 125, 130),
-                    y = c(173, 168, 163, 168, 133, 138, 143, 138, 
-                          173, 168, 163, 168, 208, 203, 198, 203),
-                    base = c(1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4))
-# Coordinates for drawing strikezone
-strikezone <- data.frame(x=c(-0.85, 0.85, 0.85, -0.85), 
-                         y=c(1.6, 1.6, 3.5, 3.5), 
-                         xend = c(0.85, 0.85, -0.85, -0.85), 
-                         yend = c(1.6, 3.5, 3.5, 1.6))
-# Starting score
-user_runs <- 5
-computer_runs <- 4
-
-#####################################
-#   UI
-#####################################
-
-ui <- fluidPage(
-    useShinyjs(),
-    useShinyalert(),
-
-    # Application title
-    titlePanel("Win the Pennant!"),
-
-    # Sidebar with radio buttons, buttons, and text
-    sidebarLayout(
-        sidebarPanel(
-            radioButtons("pitcherThrows",
-                         label = "Pick the Pitchers Throwing Arm",
-                         choices = c("Right", "Left"),
-                         selected = c("Right"),
-                         inline = TRUE),
-            radioButtons("batterStands",
-                         label = "Pick the Batter's Side",
-                         choices = c("Right", "Left"),
-                         selected = c("Right"),
-                         inline = TRUE),
-            radioButtons("pitchThrown",
-                          label = "Pick the Pitch to Throw",
-                          choices = pitch_choices,
-                          selected = c("4-Seam Fastball"),
-                          inline = FALSE),
-            actionButton("throwPitch",
-                         label = "Throw Pitch!"),
-            tags$br(), tags$br(),
-            textOutput("countName"),
-            tags$br(),
-            disabled(actionButton("newAtBat",
-                         label = "Next At-Bat")),
-            tags$br(), tags$br(),
-            disabled(actionButton("newInning",
-                         label = "Next Inning")),
-        ),
-
-        # Main panel with graphs
-        mainPanel(
-            fluidRow(column(12, align = "center", htmlOutput("score"))),
-            plotOutput("sprayChart"),
-            plotOutput("strikezone")
-        )
-    )
-)
-
-#####################################
-#   SERVER
-#####################################
-
-server <- function(input, output) {
-    # Show welcome message
-    shinyalert(title = "Welcome to our baseball game!", 
-               type = "info", confirmButtonText = "Play Ball!",
-               text = paste0("You are currently winning ", user_runs, " - ",
-                             computer_runs, " in the bottom of the ninth! ", 
-                             "Your goal is to complete the save by picking the pitcher's ",
-                             "throwing arm, the batter's hitting side, ",
-                             "and each pitch. Good luck!"))
-    
-    # List of reactive Values
-    rv <- reactiveValues(plot = NULL,
-                         ball_in_play = data.frame(),
-                         pitches_thrown = data.frame(), 
-                         num_strikes = 0,
-                         num_balls = 0,
-                         num_outs = 0,
-                         runs = computer_runs,
-                         atBatDescription = "",
-                         bases = c(FALSE, FALSE, FALSE, TRUE))
-    
-    #####################################
-    #   Function: Update bases
-    #####################################
-    
-    updateBases <- function(outcome) {
-        if (outcome %in% c("walk", "hit_by_pitch")) { # Handle walks and HBPs
-            if (!rv$bases[1]) {
-                rv$bases[1] <- TRUE
-            } else if (!rv$bases[2]) {
-                rv$bases[1] <- TRUE
-                rv$bases[2] <- TRUE
-            } else if (!rv$bases[3]) {
-                rv$bases[1] <- TRUE
-                rv$bases[2] <- TRUE
-                rv$bases[3] <- TRUE
-            } else {
-                rv$runs <- rv$runs + 1
-            }
-        } else { # Handle everything else
-            event <- case_when(outcome == "single" ~ 1,
-                               outcome == "field_error" ~ 1,
-                               outcome == "double" ~ 2,
-                               outcome == "triple" ~ 3,
-                               outcome == "home_run" ~ 4,
-                               TRUE ~ 0)
-        
-            if (event == 0 || outcome == "field_error") rv$num_outs <- rv$num_outs + 1
-            # Generate New Bases
-            newBases <-c(event, ifelse(rv$bases[1], 1 + event, 0), 
-                         ifelse(rv$bases[2], 2 + event, 0), ifelse(rv$bases[3], 3 +event, 0))
-            # Count runs
-            runs <- 0
-            rv$bases <- c(F,F,F,T)
-            for(i in newBases) {
-                if (i >= 4) rv$runs <-rv$runs + 1
-                else if (i>0) rv$bases[i] = T
-            }
-        }
-    }
-    
-    #####################################
-    #   Throw Pitch: When button clicked    
-    #####################################
-        
-    observeEvent(input$throwPitch, {
-        rv$atBatDescription = ""
-        if(rv$num_strikes + rv$num_balls == 0) {
-            disable("pitcherThrows") 
-            disable("batterStands")
-        }
-        # Filter dataset based on current situation and sample a pitch
-        data <- game_sim_data %>%
-            filter(strikes == rv$num_strikes, balls == rv$num_balls, 
-                   outs_when_up == rv$num_outs, pitch_name == input$pitchThrown,
-                   p_throws == substr(input$pitcherThrows, 1, 1),
-                   stand == substr(input$batterStands, 1, 1))
-        pitch <- data[sample(1:nrow(data), 1),]
-        rv$pitches_thrown <- rbind(rv$pitches_thrown, pitch)
-        if (pitch$type == "B") { # Handle pitch being ball
-            rv$num_balls <- rv$num_balls + 1
-            if(rv$num_balls == 4){
-                disable("throwPitch")
-                enable("newAtBat")
-                rv$atBatDescription = sub(",", ".", str_extract(pitch$des, ".*?[a-z0-9][,.]"))
-                updateBases(pitch$events)
-            }
-        } else if (pitch$type == "S") { #Handle pitch being strike
-            if (rv$num_strikes == 2 && pitch$description == "foul") { # Foul ball with 2 strikes
-                rv$atBatDescription = paste0(pitch$player_name, " hit a foul ball. The count is ", 
-                                            rv$num_balls, " - ", rv$num_strikes, ".")
-            } else {
-                rv$num_strikes <- rv$num_strikes + 1
-                if (rv$num_strikes == 3){ # Strikout
-                    disable("throwPitch")
-                    enable("newAtBat")
-                    rv$atBatDescription = sub(",", ".", str_extract(pitch$des, ".*?[a-z0-9][,.]"))
-                    rv$num_outs <- rv$num_outs + 1
-                }
-            }
-            
-        } else { # Handle batted ball event
-            rv$atBatDescription = sub(",", ".", str_extract(pitch$des, ".*?[a-z0-9][,.]"))
-            disable("throwPitch")
-            enable("newAtBat")
-            updateBases(pitch$events)
-        }
-        
-        if (rv$num_outs == 3) {
-            disable("newAtBat")
-            enable("newInning")
-        }
-        
-        if (!is.na(pitch$hc_y)) {
-            rv$ball_in_play <- pitch %>%
-                mutate(xend = 125, yend = 208)
-        }
-        # Update strikezone plot
-        rv$plot <- ggplot(rv$pitches_thrown) +
-            geom_segment(data = strikezone, aes(x=x, y=y, xend=xend, yend=yend)) +
-            geom_curve(aes(x=release_pos_x, y=release_pos_z, 
-                           xend=plate_x, yend=plate_z, color=pitch_name),
-                       curvature = -.05) +
-            geom_point(aes(x=plate_x, y=plate_z, color=pitch_name)) +
-            coord_fixed() +
-            theme_void() +
-            labs(color = "Pitch Type")
-    })
-    
-    #####################################
-    #   Restart At Bat: When button clicked    
-    #####################################
-    
-    observeEvent(input$newAtBat, {
-        # Reset everything
-        enable("pitcherThrows")
-        enable("batterStands")
-        enable("throwPitch")
-        disable("newAtBat")
-        rv$num_strikes = 0
-        rv$num_balls = 0
-        rv$atBatDescription = ""
-        rv$pitches_thrown = data.frame()
-        rv$plot = NULL
-        rv$ball_in_play = data.frame()
-        # Check for result
-        if (rv$runs > user_runs) { # Lost game
-            rv$num_outs = 0
-            rv$runs = computer_runs
-            rv$bases = c(FALSE, FALSE, FALSE, TRUE)
-            shinyalert(title = "Game over :(", 
-                       type = "error", confirmButtonText = "Try again!",
-                       text = paste0("You lost ", rv$runs, " - ",
-                                     user_runs, "."))
-            rv$runs = computer_runs
-        } 
-    })
-    
-    #####################################
-    #   Restart Inning: When button clicked    
-    #####################################
-    observeEvent(input$newInning, {
-        if (rv$runs < user_runs) { # User wins!
-            shinyalert(title = "Congrats! You win!", 
-                       type = "success", confirmButtonText = "Play Again!",
-                       text = paste0("You successfully kept the lead, winning by a score of ",
-                                     user_runs, " - ", rv$runs, "."))
-        } else if (rv$runs == user_runs) {# Tie!
-            shinyalert(title = "It was a draw.", 
-                       type = "warning", confirmButtonText = "Play Again!",
-                       text = paste0("Hey, at least you didn't lose. ",
-                                     "The game is going to extras, tied at ",  rv$runs, 
-                                     "You'll get the save next time!"))
-        }
-        # Reset everything
-        enable("pitcherThrows")
-        enable("batterStands")
-        enable("throwPitch")
-        disable("newAtBat")
-        disable("newInning")
-        rv$num_strikes = 0
-        rv$num_balls = 0
-        rv$num_outs = 0
-        rv$atBatDescription = ""
-        rv$pitches_thrown = data.frame()
-        rv$plot = NULL
-        rv$ball_in_play = data.frame()
-        rv$runs = computer_runs 
-        rv$bases = c(FALSE, FALSE, FALSE, TRUE)
-        
-    })
-    
-    #####################################
-    #   Output: Spray Chart and Bases  
-    #####################################
-    
-    output$sprayChart <- renderPlot({
-        # Create dataframe for graphing 
-        bases_df <- data.frame(base = c(1:4), runner_on = rv$bases)
-        bases <- bases %>%
-            inner_join(bases_df, by = "base") %>%
-            mutate(runner_on = ifelse(runner_on, "on", "off"))
-        cols <- c("on" = "yellow", "off" = "white")
-        # Create graph
-        p <- ggplot() + 
-            geom_mlb_stadium(stadium_ids = "generic",
-                             stadium_segments = "all") +
-            geom_polygon(data = bases, aes(x=x, y=y, group=base, 
-                                           fill = runner_on),
-                         color = "black") +
-            scale_fill_manual(values = cols) 
-    
-        if (nrow(rv$ball_in_play > 0)) {
-            p <- p + 
-                geom_point(data = rv$ball_in_play, aes(x= hc_x, y=hc_y), size = 6) +
-                geom_segment(data = rv$ball_in_play, aes(x= hc_x, y=hc_y, xend=xend, yend=yend), size=2)
-        }
-        
-        p <- p +
-            annotate("text", x = 35, y = 160, label = "Outs") +
-            annotate("text", x = 35, y = 170, label = "Balls") +
-            annotate("text", x = 35, y = 180, label = "Strikes")
-        
-        # Add dots for outs
-        outs_df <- data.frame()
-        for (i in 1:2) {
-            outs_df <- rbind(outs_df, data.frame(x=45+i*6, y=160, 
-                                                 out = ifelse(rv$num_outs >= i, "yes", "no")))
-        }
-        # Add dots for strikes
-        strikes_df <- data.frame()
-        for (i in 1:2) {
-            strikes_df <- rbind(strikes_df, data.frame(x=45+i*6, y=180, 
-                                                 out = ifelse(rv$num_strikes >= i, "yes", "no")))
-        }
-        # Add dots for balls
-        balls_df <- data.frame()
-        for (i in 1:3) {
-            balls_df <- rbind(balls_df, data.frame(x=45+i*6, y=170, 
-                                                 out = ifelse(rv$num_balls >= i, "yes", "no")))
-        }
-        
-        cols <- c("yes" = "black", "no" = "grey")
-        p <- p +
-            geom_point(data = outs_df, aes(x=x, y=y, color = out)) +
-            geom_point(data = balls_df, aes(x=x, y=y, color = out)) +
-            geom_point(data = strikes_df, aes(x=x, y=y, color = out)) +
-            scale_color_manual(values = cols)
-        
-        p +
-            scale_y_reverse() +
-            coord_fixed() +
-            theme_void() +
-            theme(legend.position = "none")
-    })
-    
-    #####################################
-    #   Output: Strikezone and Pitches 
-    #####################################
-    
-    output$strikezone <- renderPlot({
-        if (is.null(rv$plot)) {
-            ggplot(rv$pitches_thrown) +
-                geom_segment(data = strikezone, aes(x=x, y=y, xend=xend, yend=yend)) +
-                coord_fixed() +
-                theme_void()
-        } else {
-            rv$plot
-        }
-        
-    })
-    
-    #####################################
-    #   Output: Text for count and description
-    #####################################
-    
-    output$countName <- renderText({
-        if (rv$atBatDescription == ""){
-            paste(rv$num_balls, "-", rv$num_strikes)
-        }
-        else(
-            rv$atBatDescription
-        )
-    })
-    
-    #####################################
-    #   Output: Text for score
-    #####################################
-    
-    output$score <- renderText({
-        score <- paste0(user_runs, " - ", rv$runs, "!")
-        case_when(rv$runs > user_runs ~ paste("<b>You lost", score, "Better luck next time!"),
-                  rv$runs == user_runs ~ paste("<b>You are tied", score, "Don't lose the game!"),
-                  rv$runs < user_runs ~ paste("<b>You are winning", score, "Don't blow the lead!"))
-    })
-}
-
-# Run the application 
-shinyApp(ui = ui, server = server)
-```
 
 
 ## Conclusion
 
 Baseball is a sport that involves significant amounts of luck. You could hit the ball really hard, but if it’s right at a fielder, then you don’t get credit for doing almost everything right. Even over the course of an entire season, some players can be incredibly lucky. One way to extend this analysis would be to use more seasons to get a larger sample size. This would especially help for the splits visualizations, where players might only reach a 3-2 count a handful of times over the course of  a single season. The statistics we are looking at, like average, slugging percentage, and the type of hit, are also very simple statistics. Since Statcast was introduced in 2015, the vast array of new data has been used to develop much better statistics to measure player’s skill (barrels, xWOBA, and Hard Hit %, to name a few). To truly answer our questions, we would be better off diving into the more advanced statistics, which are both more descriptive of a player’s skill and more predictive of a player’s future success.
-
 

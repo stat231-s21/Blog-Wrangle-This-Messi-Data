@@ -209,12 +209,15 @@ Using the “GeomMLBStadiums” package, which contains stadium outlines positio
 # 
 # 
 
- ```
+```
 
 
 
 
 ``` {r}
+#this test plot was created in order to find the intersections of our lines with the outlines of the stadium
+#this was done in order to construct our spatial data set (titles "spatialPts" in the above code")
+
 # test_Spatial <- spatial_data %>%
 #   filter(player_name == "Judge, Aaron" | player_name == "Trout, Mike") 
 # 

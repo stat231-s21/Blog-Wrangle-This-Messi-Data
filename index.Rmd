@@ -32,7 +32,7 @@ What makes Statcast so exciting to baseball nerds is its novelty. For centuries,
 ![DJ LeMahieu's Animated Statcast Spray Chart](https://media4.giphy.com/media/LqOCx31NbvhieaBd8a/giphy.gif?cid=ecf05e47lowy5x99ftysj7jkpiex2et90sg3vww9k1to7076&rid=giphy.gif&ct=g)
 </center>
 
-More simply, Statcast helps us understand how a given event or outcome on the baseball field came to be instead of just observing what that event or outcome was. 
+More simply, Statcast helps us understand *how* a given event or outcome on the baseball field came to be instead of just observing what that event or outcome was. 
 
 
 For this project, we wanted to analyze this Statcast data to provide insight on a number of decades-old baseball questions: Do certain players have a tendency to hit the ball to a certain location? If so, which players do so and where do they tend to hit the ball? Do “hitters-counts” really exist? That is, does a hitter really have better statistics when the count is in his favor? Can we generalize this information to all hitters? Do players hit better at home versus away? What pitches are most effective to certain hitters? 
@@ -41,7 +41,7 @@ The list of questions goes on, but our data wrangling must start somewhere. We h
 
 ## Data Sources and Wrangling
 
-The “baseballr” package contains functions that allow for easy scraping of MLB’s Statcast data, which is hosted on the website (https://baseballsavant.mlb.com/). Since the Statcast tool tracks statistics for every single pitch thrown, and there are upwards of 500,000 pitches thrown each season, we decided to only focus on the most recent full season for our analysis to make the data set more manageable. 
+The “baseballr” package contains functions that allow for easy scraping of MLB’s Statcast data, which is hosted on the website !{(https://baseballsavant.mlb.com/). Since the Statcast tool tracks statistics for every single pitch thrown, and there are upwards of 500,000 pitches thrown each season, we decided to only focus on the most recent full season for our analysis to make the data set more manageable. 
 
 Since the package is made for professional use, the data was very specific about some categorical variables. For example, the “event” variable listed the normal “single”, “double”, “strike-out” events, but also some events like “sac_fly_double_play” and “field_error”, which we had to combine together to make the data more granular. 
 
@@ -231,7 +231,7 @@ Using the “GeomMLBStadiums” package, which contains stadium outlines positio
 
 ``` {r}
 #this test plot was created in order to find the intersections of our lines with the outlines of the stadium
-#this was done in order to construct our spatial data set (titlds "spatialPts" in the above code")
+#this was done in order to construct our spatial data set
 
 # test_Spatial <- spatial_data %>%
 #   filter(player_name == "Judge, Aaron" | player_name == "Trout, Mike") 
@@ -308,5 +308,15 @@ Baseball is a sport that involves significant amounts of luck. You could hit the
 
 ## Bibliography
 
+1. Baseball Positioning. Wikipedia. (2021, January 25). https://en.wikipedia.org/wiki/Baseball_positioning.
 
+2. Bdilday. (n.d.). bdilday/GeomMLBStadiums. GitHub. https://github.com/bdilday/GeomMLBStadiums.
+
+3. Functions for acquiring and analyzing baseball data. Functions for acquiring and analyzing baseball data •. (n.d.). http://billpetti.github.io/baseballr/.
+
+4. Major League Baseball. (n.d.). Baseball Savant: Trending MLB Players, Statcast and Visualizations. baseballsavant.com. https://baseballsavant.mlb.com/.
+
+5. Statcast Gif. (n.d.). https://media4.giphy.com/media/LqOCx31NbvhieaBd8a/giphy.gif?cid=ecf05e47lowy5x99ftysj7jkpiex2et90sg3vww9k1to7076&rid=giphy.gif&ct=g.
+
+6. What are shifts?: Glossary. Major League Baseball. (n.d.). http://m.mlb.com/glossary/statcast/shifts. 
 

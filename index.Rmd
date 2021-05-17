@@ -84,9 +84,14 @@ Over the past decade in the MLB, there has been a drastic change in how teams ap
 
 Below is a diagram of a traditional defense versus a shift for a hitter that hits the ball to right field. Though there are numerous examples of different shifts, the one below is likely the first you would see in watching an MLB game today. But, in order to accurately design your shifts, you must first analyze where players hit the ball and at what frequency. In our analysis, we used spatial data combined with our statcast data to do just that. 
 
+<center>
 <a href="https://imgbb.com/"><img src="https://i.ibb.co/2s93Whb/Screen-Shot-2021-05-12-at-4-57-58-PM.png" alt="Screen-Shot-2021-05-12-at-4-57-58-PM" border="0"></a><br />
+<\center>
 
+<center>
 <a href="https://ibb.co/HYbhZJV"><img src="https://i.ibb.co/K7fKn1X/Screen-Shot-2021-05-12-at-4-58-07-PM.png" alt="Screen-Shot-2021-05-12-at-4-58-07-PM" border="0"></a><br /> 
+<\center>
+
 
 Using the “GeomMLBStadiums” package, which contains stadium outlines positioned based upon Statcast’s xy-coordinate system for batted balls, we were able to use some simple trigonometry to divide a generic baseball field into five sections. 
 
@@ -180,6 +185,7 @@ Using the “GeomMLBStadiums” package, which contains stadium outlines positio
 #   output$spray <- renderPlot({
 #   
 #     #calculate the proportion hit to each zone based on what player is chosen
+
 #   dataSpatial <- spatial_data %>%
 #     filter(player_name %in% input$player) %>%
 #     group_by(zone) %>%
@@ -222,7 +228,7 @@ Using the “GeomMLBStadiums” package, which contains stadium outlines positio
 
 ``` {r}
 #this test plot was created in order to find the intersections of our lines with the outlines of the stadium
-#this was done in order to construct our spatial data set (titles "spatialPts" in the above code")
+#this was done in order to construct our spatial data set (titlds "spatialPts" in the above code")
 
 # test_Spatial <- spatial_data %>%
 #   filter(player_name == "Judge, Aaron" | player_name == "Trout, Mike") 
@@ -250,8 +256,7 @@ Note that the map of the field is a generic field and the hitting statistics com
 
 Altuve’s chart is one of a right handed pull hitter, who bats most of his balls to the left side of the field. In order to shift against Altuve, a team would take almost the opposite position of our example above, positioning the third baseman on the left field line, and the second baseman to the left of second base. Conversely, Joey Gallo hits an even larger proportion to the right side of the field and so a team would be likely to take a shift similar to the one above when he is hitting. Between the two extremes is Tim Anderson, whose hit frequency is similar across both sides of the field. Given this, a traditional, straight-up defense would be better suited to defend when he is at the plate. 
 
-Spray charts of this type are not just a visualization, but a tool currently being used across the majors that impacts the game we see on the field. 
-
+Spray charts of this type are not just a visualization, but a tool currently being used across the majors that impacts the game we see on the field. Of course, the analysis conducted by Major League teams spans far past simply examining the spray chart for players from a singular season. In order to understand further how teams plan their defensive positions using Statcast statistics, metrics such as launch angle, average exit velocity, or more predicative statistics such as expected batting average would be the next steps in analysis. It is also difficult to generalize players' tendencies off of one year of data, as many factors including injuries or a team change can drastically alter the course of a player's season. This does not mean that more recent statistics are not important in understanding how to game plan against a certain player at the plate, rather that all results should be contextualized with experiences outside the batter's box. 
 
 ## Splits Comparisons
 

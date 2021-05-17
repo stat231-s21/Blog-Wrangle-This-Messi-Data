@@ -28,7 +28,9 @@ For more than one hundred years, baseball has been a numbers game. We currently 
 
 What makes Statcast so exciting to baseball nerds is its novelty. For centuries, fans used the same statistics to compare players. Yet, all of these statistics were calculated based upon the final result of a given play. Statcast is unique as it tracks the movement of the game. With Statcast, we can examine a ball’s rotations per minute, launch angle and exit velocity, allowing us to calculate the exact position a ball landed on a field, or track ball flight paths like this:
 
-![statcast animation](https://media4.giphy.com/media/LqOCx31NbvhieaBd8a/giphy.gif?cid=ecf05e47lowy5x99ftysj7jkpiex2et90sg3vww9k1to7076&rid=giphy.gif&ct=g)
+<center>
+![DJ LeMahieu's Animated Statcast Spray Chart](https://media4.giphy.com/media/LqOCx31NbvhieaBd8a/giphy.gif?cid=ecf05e47lowy5x99ftysj7jkpiex2et90sg3vww9k1to7076&rid=giphy.gif&ct=g)
+</center>
 
 More simply, Statcast helps us understand how a given event or outcome on the baseball field came to be instead of just observing what that event or outcome was. 
 
@@ -85,12 +87,13 @@ Over the past decade in the MLB, there has been a drastic change in how teams ap
 Below is a diagram of a traditional defense versus a shift for a hitter that hits the ball to right field. Though there are numerous examples of different shifts, the one below is likely the first you would see in watching an MLB game today. But, in order to accurately design your shifts, you must first analyze where players hit the ball and at what frequency. In our analysis, we used spatial data combined with our statcast data to do just that. 
 
 <center>
-<a href="https://imgbb.com/"><img src="https://i.ibb.co/2s93Whb/Screen-Shot-2021-05-12-at-4-57-58-PM.png" alt="Screen-Shot-2021-05-12-at-4-57-58-PM" border="0"></a><br />
-<\center>
+"Straight Up" Defensive Alignment <a href="https://imgbb.com/"><img src="https://i.ibb.co/2s93Whb/Screen-Shot-2021-05-12-at-4-57-58-PM.png" alt="Screen-Shot-2021-05-12-at-4-57-58-PM" border="0"></a><br />
+</center>
+
 
 <center>
-<a href="https://ibb.co/HYbhZJV"><img src="https://i.ibb.co/K7fKn1X/Screen-Shot-2021-05-12-at-4-58-07-PM.png" alt="Screen-Shot-2021-05-12-at-4-58-07-PM" border="0"></a><br /> 
-<\center>
+Shifted Defensive Alignment (towards right field) <a href="https://ibb.co/HYbhZJV"><img src="https://i.ibb.co/K7fKn1X/Screen-Shot-2021-05-12-at-4-58-07-PM.png" alt="Screen-Shot-2021-05-12-at-4-58-07-PM" border="0"></a><br /> 
+</center>
 
 
 Using the “GeomMLBStadiums” package, which contains stadium outlines positioned based upon Statcast’s xy-coordinate system for batted balls, we were able to use some simple trigonometry to divide a generic baseball field into five sections. 
@@ -301,5 +304,9 @@ Good luck!
 ## Conclusion
 
 Baseball is a sport that involves significant amounts of luck. You could hit the ball really hard, but if it’s right at a fielder, then you don’t get credit for doing almost everything right. Even over the course of an entire season, some players can be incredibly lucky. One way to extend this analysis would be to use more seasons to get a larger sample size. This would especially help for the splits visualizations, where players might only reach a 3-2 count a handful of times over the course of  a single season. The statistics we are looking at, like average, slugging percentage, and the type of hit, are also very simple statistics. Since Statcast was introduced in 2015, the vast array of new data has been used to develop much better statistics to measure player’s skill (barrels, xWOBA, and Hard Hit %, to name a few). To truly answer our questions, we would be better off diving into the more advanced statistics, which are both more descriptive of a player’s skill and more predictive of a player’s future success.
+
+
+## Bibliography
+
 
 

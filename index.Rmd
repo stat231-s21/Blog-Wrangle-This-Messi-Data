@@ -32,16 +32,23 @@ What makes Statcast so exciting to baseball nerds is its novelty. For centuries,
 ![statcast animation](https://media4.giphy.com/media/LqOCx31NbvhieaBd8a/giphy.gif?cid=ecf05e47lowy5x99ftysj7jkpiex2et90sg3vww9k1to7076&rid=giphy.gif&ct=g)
 </center>
 
-More simply, Statcast helps us understand how a given event or outcome on the baseball field came to be instead of just observing what that event or outcome was. 
+More simply, Statcast helps us understand *how* a given event or outcome on the baseball field came to be instead of just observing what that event or outcome was. 
 
 
 For this project, we wanted to analyze this Statcast data to provide insight on a number of decades-old baseball questions: Do certain players have a tendency to hit the ball to a certain location? If so, which players do so and where do they tend to hit the ball? Do “hitters-counts” really exist? That is, does a hitter really have better statistics when the count is in his favor? Can we generalize this information to all hitters? Do players hit better at home versus away? What pitches are most effective to certain hitters? 
   
 The list of questions goes on, but our data wrangling must start somewhere. We hope the following interactive plots and games are both fun and insightful. Enjoy!
+<<<<<<< HEAD
   
   ## Data Sources and Wrangling
   
 The “baseballr” package contains functions that allow for easy scraping of MLB’s Statcast data, which is hosted on the website (https://baseballsavant.mlb.com/). Since the Statcast tool tracks statistics for every single pitch thrown, and there are upwards of 500,000 pitches thrown each season, we decided to only focus on the most recent full season for our analysis to make the data set more manageable. 
+=======
+
+## Data Sources and Wrangling
+
+The “baseballr” package contains functions that allow for easy scraping of MLB’s Statcast data, which is hosted on the website !{(https://baseballsavant.mlb.com/). Since the Statcast tool tracks statistics for every single pitch thrown, and there are upwards of 500,000 pitches thrown each season, we decided to only focus on the most recent full season for our analysis to make the data set more manageable. 
+>>>>>>> d9dc26b5ef047c969e0d54ed74b42bfa5fcc2a88
 
 Since the package is made for professional use, the data was very specific about some categorical variables. For example, the “event” variable listed the normal “single”, “double”, “strike-out” events, but also some events like “sac_fly_double_play” and “field_error”, which we had to combine together to make the data more granular. 
 
@@ -299,6 +306,7 @@ shinyApp(ui = ui, server = server)
 judge_trout <- spatial_data %>%
   filter(player_name == "Judge, Aaron" | player_name == "Trout, Mike")
 
+<<<<<<< HEAD
 ggplot(data = judge_trout, aes(x = hc_x, y = hc_y, color = zone)) +
   geom_point() +
   geom_mlb_stadium(stadium_ids = "generic", stadium_segments = "all") +
@@ -307,6 +315,26 @@ ggplot(data = judge_trout, aes(x = hc_x, y = hc_y, color = zone)) +
   geom_segment(aes(x = 125, y = 208, xend = 95, yend =  208 - tan(81*pi/180)*30)) +
   geom_segment(aes(x = 125, y = 208, xend = 155, yend = 208 + tan(99*pi/180)*30)) +
   geom_segment(aes(x = 125, y = 208, xend = 202, yend = 208 + tan(117*pi/180)*77))
+=======
+
+``` {r}
+#this test plot was created in order to find the intersections of our lines with the outlines of the stadium
+#this was done in order to construct our spatial data set
+
+# test_Spatial <- spatial_data %>%
+#   filter(player_name == "Judge, Aaron" | player_name == "Trout, Mike") 
+# 
+# g <- ggplot(data = test_Spatial, aes(x = hc_x, y = hc_y, color = zone)) +
+#     geom_point() +
+#     geom_mlb_stadium(stadium_ids = "generic", stadium_segments = "all") +
+#     scale_y_reverse() +
+#     geom_segment(aes(x = 125, y = 208, xend = 48, yend = 208 - tan(63*pi/180)*77)) +
+#     geom_segment(aes(x = 125, y = 208, xend = 95, yend =  208 - tan(81*pi/180)*30)) +
+#     geom_segment(aes(x = 125, y = 208, xend = 155, yend = 208 + tan(99*pi/180)*30)) +
+#     geom_segment(aes(x = 125, y = 208, xend = 202, yend = 208 + tan(117*pi/180)*77)) 
+# 
+# g
+>>>>>>> d9dc26b5ef047c969e0d54ed74b42bfa5fcc2a88
 
 ```
 
@@ -758,3 +786,20 @@ shinyApp(ui = ui, server = server)
 Baseball is a sport that involves significant amounts of luck. You could hit the ball really hard, but if it’s right at a fielder, then you don’t get credit for doing almost everything right. Even over the course of an entire season, some players can be incredibly lucky. One way to extend this analysis would be to use more seasons to get a larger sample size. This would especially help for the splits visualizations, where players might only reach a 3-2 count a handful of times over the course of  a single season. The statistics we are looking at, like average, slugging percentage, and the type of hit, are also very simple statistics. Since Statcast was introduced in 2015, the vast array of new data has been used to develop much better statistics to measure player’s skill (barrels, xWOBA, and Hard Hit %, to name a few). To truly answer our questions, we would be better off diving into the more advanced statistics, which are both more descriptive of a player’s skill and more predictive of a player’s future success.
 
 
+<<<<<<< HEAD
+=======
+## Bibliography
+
+1. Baseball Positioning. Wikipedia. (2021, January 25). https://en.wikipedia.org/wiki/Baseball_positioning.
+
+2. Bdilday. (n.d.). bdilday/GeomMLBStadiums. GitHub. https://github.com/bdilday/GeomMLBStadiums.
+
+3. Functions for acquiring and analyzing baseball data. Functions for acquiring and analyzing baseball data •. (n.d.). http://billpetti.github.io/baseballr/.
+
+4. Major League Baseball. (n.d.). Baseball Savant: Trending MLB Players, Statcast and Visualizations. baseballsavant.com. https://baseballsavant.mlb.com/.
+
+5. Statcast Gif. (n.d.). https://media4.giphy.com/media/LqOCx31NbvhieaBd8a/giphy.gif?cid=ecf05e47lowy5x99ftysj7jkpiex2et90sg3vww9k1to7076&rid=giphy.gif&ct=g.
+
+6. What are shifts?: Glossary. Major League Baseball. (n.d.). http://m.mlb.com/glossary/statcast/shifts. 
+
+>>>>>>> d9dc26b5ef047c969e0d54ed74b42bfa5fcc2a88

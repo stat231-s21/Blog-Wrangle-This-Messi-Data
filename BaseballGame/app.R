@@ -107,7 +107,7 @@ server <- function(input, output) {
     #####################################
     
     updateBases <- function(outcome) {
-        if (outcome %in% c("walk", "hit_by_pitch")) {
+        if (outcome %in% c("walk", "hit_by_pitch")) { # Handle walks and HBPs
             if (!rv$bases[1]) {
                 rv$bases[1] <- TRUE
             } else if (!rv$bases[2]) {
@@ -120,7 +120,7 @@ server <- function(input, output) {
             } else {
                 rv$runs <- rv$runs + 1
             }
-        } else {
+        } else { # Handle everything else
             event <- case_when(outcome == "single" ~ 1,
                                outcome == "field_error" ~ 1,
                                outcome == "double" ~ 2,
@@ -129,10 +129,10 @@ server <- function(input, output) {
                                TRUE ~ 0)
         
             if (event == 0 || outcome == "field_error") rv$num_outs <- rv$num_outs + 1
-            
+            # Generate New Bases
             newBases <-c(event, ifelse(rv$bases[1], 1 + event, 0), 
                          ifelse(rv$bases[2], 2 + event, 0), ifelse(rv$bases[3], 3 +event, 0))
-            
+            # Count runs
             runs <- 0
             rv$bases <- c(F,F,F,T)
             for(i in newBases) {
@@ -152,7 +152,7 @@ server <- function(input, output) {
             disable("pitcherThrows") 
             disable("batterStands")
         }
-
+        # Filter dataset based on current situation and sample a pitch
         data <- game_sim_data %>%
             filter(strikes == rv$num_strikes, balls == rv$num_balls, 
                    outs_when_up == rv$num_outs, pitch_name == input$pitchThrown,
@@ -160,7 +160,7 @@ server <- function(input, output) {
                    stand == substr(input$batterStands, 1, 1))
         pitch <- data[sample(1:nrow(data), 1),]
         rv$pitches_thrown <- rbind(rv$pitches_thrown, pitch)
-        if (pitch$type == "B") {
+        if (pitch$type == "B") { # Handle pitch being ball
             rv$num_balls <- rv$num_balls + 1
             if(rv$num_balls == 4){
                 disable("throwPitch")
@@ -168,13 +168,13 @@ server <- function(input, output) {
                 rv$atBatDescription = sub(",", ".", str_extract(pitch$des, ".*?[a-z0-9][,.]"))
                 updateBases(pitch$events)
             }
-        } else if (pitch$type == "S") {
-            if (rv$num_strikes == 2 && pitch$description == "foul") {
+        } else if (pitch$type == "S") { #Handle pitch being strike
+            if (rv$num_strikes == 2 && pitch$description == "foul") { # Foul ball with 2 strikes
                 rv$atBatDescription = paste0(pitch$player_name, " hit a foul ball. The count is ", 
                                             rv$num_balls, " - ", rv$num_strikes, ".")
             } else {
                 rv$num_strikes <- rv$num_strikes + 1
-                if (rv$num_strikes == 3){
+                if (rv$num_strikes == 3){ # Strikout
                     disable("throwPitch")
                     enable("newAtBat")
                     rv$atBatDescription = sub(",", ".", str_extract(pitch$des, ".*?[a-z0-9][,.]"))
@@ -182,7 +182,7 @@ server <- function(input, output) {
                 }
             }
             
-        } else {
+        } else { # Handle batted ball event
             rv$atBatDescription = sub(",", ".", str_extract(pitch$des, ".*?[a-z0-9][,.]"))
             disable("throwPitch")
             enable("newAtBat")
@@ -198,7 +198,7 @@ server <- function(input, output) {
             rv$ball_in_play <- pitch %>%
                 mutate(xend = 125, yend = 208)
         }
-        
+        # Update strikezone plot
         rv$plot <- ggplot(rv$pitches_thrown) +
             geom_segment(data = strikezone, aes(x=x, y=y, xend=xend, yend=yend)) +
             geom_curve(aes(x=release_pos_x, y=release_pos_z, 
@@ -215,6 +215,7 @@ server <- function(input, output) {
     #####################################
     
     observeEvent(input$newAtBat, {
+        # Reset everything
         enable("pitcherThrows")
         enable("batterStands")
         enable("throwPitch")
@@ -225,8 +226,8 @@ server <- function(input, output) {
         rv$pitches_thrown = data.frame()
         rv$plot = NULL
         rv$ball_in_play = data.frame()
-        
-        if (rv$runs > user_runs) {
+        # Check for result
+        if (rv$runs > user_runs) { # Lost game
             rv$num_outs = 0
             rv$runs = computer_runs
             rv$bases = c(FALSE, FALSE, FALSE, TRUE)
@@ -241,7 +242,6 @@ server <- function(input, output) {
     #####################################
     #   Restart Inning: When button clicked    
     #####################################
-    
     observeEvent(input$newInning, {
         if (rv$runs < user_runs) { # User wins!
             shinyalert(title = "Congrats! You win!", 
@@ -255,7 +255,7 @@ server <- function(input, output) {
                                      "The game is going to extras, tied at ",  rv$runs, 
                                      "You'll get the save next time!"))
         }
-        
+        # Reset everything
         enable("pitcherThrows")
         enable("batterStands")
         enable("throwPitch")
@@ -278,12 +278,13 @@ server <- function(input, output) {
     #####################################
     
     output$sprayChart <- renderPlot({
+        # Create dataframe for graphing 
         bases_df <- data.frame(base = c(1:4), runner_on = rv$bases)
         bases <- bases %>%
             inner_join(bases_df, by = "base") %>%
             mutate(runner_on = ifelse(runner_on, "on", "off"))
         cols <- c("on" = "yellow", "off" = "white")
-        
+        # Create graph
         p <- ggplot() + 
             geom_mlb_stadium(stadium_ids = "generic",
                              stadium_segments = "all") +
@@ -291,7 +292,7 @@ server <- function(input, output) {
                                            fill = runner_on),
                          color = "black") +
             scale_fill_manual(values = cols) 
-        
+    
         if (nrow(rv$ball_in_play > 0)) {
             p <- p + 
                 geom_point(data = rv$ball_in_play, aes(x= hc_x, y=hc_y), size = 6) +

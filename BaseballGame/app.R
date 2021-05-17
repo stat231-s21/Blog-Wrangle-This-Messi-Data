@@ -202,9 +202,9 @@ server <- function(input, output) {
         rv$plot <- ggplot(rv$pitches_thrown) +
             geom_segment(data = strikezone, aes(x=x, y=y, xend=xend, yend=yend)) +
             geom_curve(aes(x=release_pos_x, y=release_pos_z, 
-                           xend=plate_x, yend=plate_z, color=pitch_type),
+                           xend=plate_x, yend=plate_z, color=pitch_name),
                        curvature = -.05) +
-            geom_point(aes(x=plate_x, y=plate_z, color=pitch_type)) +
+            geom_point(aes(x=plate_x, y=plate_z, color=pitch_name)) +
             coord_fixed() +
             theme_void() +
             labs(color = "Pitch Type")
@@ -232,9 +232,9 @@ server <- function(input, output) {
             rv$bases = c(FALSE, FALSE, FALSE, TRUE)
             shinyalert(title = "Game over :(", 
                        type = "error", confirmButtonText = "Try again!",
-                       text = paste0("You lost ", computer_runs, " - ",
+                       text = paste0("You lost ", rv$runs, " - ",
                                      user_runs, "."))
-            
+            rv$runs = computer_runs
         } 
     })
     

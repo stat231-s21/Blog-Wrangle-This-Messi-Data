@@ -41,7 +41,7 @@ The list of questions goes on, but our data wrangling must start somewhere. We h
 
 ## Data Sources and Wrangling
 
-The “baseballr” package contains functions that allow for easy scraping of MLB’s Statcast data, which is hosted on the website !{(https://baseballsavant.mlb.com/). Since the Statcast tool tracks statistics for every single pitch thrown, and there are upwards of 500,000 pitches thrown each season, we decided to only focus on the most recent full season for our analysis to make the data set more manageable. 
+The “baseballr” package contains functions that allow for easy scraping of MLB’s Statcast data, which is hosted on the website baseballsavant.mlb.com/. Since the Statcast tool tracks statistics for every single pitch thrown, and there are upwards of 500,000 pitches thrown each season, we decided to only focus on the most recent full season for our analysis to make the data set more manageable. 
 
 Since the package is made for professional use, the data was very specific about some categorical variables. For example, the “event” variable listed the normal “single”, “double”, “strike-out” events, but also some events like “sac_fly_double_play” and “field_error”, which we had to combine together to make the data more granular. 
 
@@ -159,11 +159,11 @@ Below is a diagram of a traditional defense versus a shift for a hitter that hit
 
 <center>
   <a href="https://imgbb.com/"><img src="https://i.ibb.co/2s93Whb/Screen-Shot-2021-05-12-at-4-57-58-PM.png" alt="Screen-Shot-2021-05-12-at-4-57-58-PM" border="0"></a><br />
-<\center>
+</center>
   
 <center>
   <a href="https://ibb.co/HYbhZJV"><img src="https://i.ibb.co/K7fKn1X/Screen-Shot-2021-05-12-at-4-58-07-PM.png" alt="Screen-Shot-2021-05-12-at-4-58-07-PM" border="0"></a><br /> 
-<\center>
+</center>
   
   
 Using the “GeomMLBStadiums” package, which contains stadium outlines positioned based upon Statcast’s xy-coordinate system for batted balls, we were able to use some simple trigonometry to divide a generic baseball field into five sections. 
@@ -294,7 +294,7 @@ shinyApp(ui = ui, server = server)
 # This test plot was created in order to find the intersections of our 
 #     lines with the outlines of the stadium
 # This was done in order to construct our spatial data 
-#     set (titlds "spatialPts" in the above code")
+
 
 judge_trout <- spatial_data %>%
   filter(player_name == "Judge, Aaron" | player_name == "Trout, Mike")

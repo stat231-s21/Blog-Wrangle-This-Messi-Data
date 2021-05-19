@@ -341,6 +341,138 @@ Our shiny app provides the user with interactivity to choose any batter from the
 ```{r splits-plot-shiny-app, include=FALSE, eval=FALSE}
 # Code for the splits plots shiny app
 # Code can be found at SplitsPlot/app.R
+
+# Create data set for spatial splots 
+spatial_data <- savant_data_filtered %>%
+  filter(events %in% c("field_out", "single", "double", "home_run", "sac_fly",
+                         "sac_bunt_double_play", "force_out", "grounded_into_double_play",
+                         "field_error", "fielders_choice", "double_play", "triple",
+                         "sac_bunt", "fielders_choice_out", "sac_fly_double_play",
+                         "triple_play"),
+         !is.na(hc_x), !is.na(hc_y)) %>%
+  select(player_name, hc_x, hc_y, events, stand, launch_speed, launch_angle) %>%
+  mutate(angle = ifelse(hc_x < 125, 
+                        atan((208 - hc_y) / (125 - hc_x)) * 180 / pi - 45, 
+                        135 - atan((208 - hc_y) / (hc_x - 125)) * 180 / pi))
+
+# Create data set for splits plots
+splits_data <- savant_data_filtered %>%
+  filter(events %in% c("field_out", "single", "double", "home_run", "sac_fly",
+                        "sac_bunt_double_play", "force_out", "grounded_into_double_play",
+                        "field_error", "fielders_choice", "double_play", "triple",
+                        "sac_bunt", "fielders_choice_out", "sac_fly_double_play",
+                        "triple_play", "walk", "hit_by_pitch", "strikeout", "other_out", 
+                       "strikeout_double_play", "catcher_interf"),
+         balls != 4, strikes != 3) %>%
+  mutate(pitch_type = case_when(pitch_type == "KC" ~ "CU",
+                                TRUE ~ pitch_type),
+         pitch_name = case_when(pitch_name == "Knuckle Curve" ~ "Curveball",
+                                TRUE ~ pitch_name),) %>%
+  filter(pitch_type %in% c("FF", "CH", "SL", "FT", "SI", "CU", "FC")) %>%
+  select(player_name, events, pitch_type, pitch_name, p_throws, strikes, balls, on_1b, on_2b, on_3b,
+         inning_topbot) %>%
+  mutate(count = paste(balls, "-", strikes, sep = " "),
+         runners_on = ifelse(is.na(on_1b), 0, 1) + 
+                      ifelse(is.na(on_2b), 0, 1) +
+                      ifelse(is.na(on_3b), 0, 1),
+         home_away = ifelse(inning_topbot == "Top", "away", "home")) %>%
+  select(-inning_topbot)
+
+# Code for splits shiny app
+
+battingSplits <- splits_data %>%
+  mutate(hit_out = case_when(str_detect(events,"out") ~ "Out",
+                            str_detect(events,"error") ~ "Out",
+                            str_detect(events,"play") ~ "Out",
+                            str_detect(events,"out") ~ "Out",
+                            str_detect(events,"run") ~ "Hit",
+                            str_detect(events,"single") ~ "Hit",
+                            str_detect(events,"triple") ~ "Hit",
+                            str_detect(events,"double") ~ "Hit")) %>%
+           filter(!is.na(hit_out))
+
+player_list = battingSplits$player_name %>%
+  unique() %>%
+  sort()
+
+ui <- fluidPage(
+  titlePanel("Splits Plot"),
+  
+  # Sidebar with a slider input for number of bins 
+  sidebarLayout(
+    sidebarPanel(
+      selectizeInput(
+        inputId = "player",
+        label = "Choose the batter",
+        choices = player_list,
+        selected = c("Altuve, Jose", "Judge, Aaron", "Posey, Buster", "Yelich, Christian"),
+        multiple = TRUE
+      ),
+      radioButtons(
+        inputId = "split",
+        label = "Choose data to split by",
+        choices = list("Home/Away"= "home_away", "Pitcher Side" = "p_throws", "Runners on" = "runners_on", 
+                      "Count" = "count", "Pitch Type" = "pitch_name"),
+        selected = "home_away",
+        inline = FALSE,
+      
+      )
+      
+    ),
+    
+    # Show a plot of the generated distribution
+    mainPanel(
+      plotlyOutput("splitPlot"),
+      
+    )
+  )
+  
+)
+
+
+
+
+server <- function(input, output){
+  output$splitPlot <- renderPlotly({
+    # Get name of columns for pivot wider down below
+    columns <- c()
+    for (stat in c("average","slugging")) {
+      for (split in  unique(battingSplits[input$split])) {
+        columns <- append(columns, paste(stat, split, sep = "_"))
+      }
+    }
+    
+    # Get data into the right format
+    battingPlot <- battingSplits %>%
+      filter(player_name %in% input$player) %>%
+      group_by(player_name, !!rlang::sym(input$split)) %>%
+      summarize(average = sum(hit_out == "Hit")/n(), slugging = (sum(events == "single") +
+                                     sum(events == "double")*2 + sum(events == "triple")*3 + 
+                                      sum(events == "home_run")*4) / n()) %>%
+      pivot_wider(names_from = input$split, values_from = c("average", "slugging")) %>%
+      pivot_longer(cols = columns,
+                   names_to = "stat", values_to = "val") %>%
+      separate(stat, into = c("stat","split"), sep = "_") 
+    
+   # Build the plot
+    plot <- ggplot(battingPlot) +
+      geom_point(aes(x = player_name, color = split, y = val,
+                     text = paste0("<b>", toupper(split), ":</b> ", 
+                                   str_pad(round(val, 3), width = 5, pad = "0", side = "right")))) +
+      facet_wrap(~stat) +
+      labs(x = "", y = "Value of Stat", color = "Split") +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    
+    ggplotly(plot, tooltip = "text") %>%
+      layout(hovermode = 'compare')
+  })
+    
+
+   
+}
+
+shinyApp(ui = ui, server = server)
+
 ```
 
 As you can see, many of these splits do provide meaningful insight. For example, “hitters counts” do really exist. Almost all hitters are significantly better in high-ball/low-strike counts than they are in low-ball/high-strike counts. The reason why is fairly intuitive: when there are many balls and few strikes, pitchers have more pressure to throw pitches they can control into the strike zone, giving hitters not only a clue as to what pitch may come, but the freedom to lay-off the pitch if it’s not perfect. Additionally, with a bit of work we can see that righty hitters generally fare better against lefty pitchers and lefty hitters are more successful against righty pitchers. 
@@ -372,7 +504,7 @@ library(tidyverse)
 library(plotly)
 library(shinyjs)
 library(stringr)
-library(GeomMLBStadiums)
+#library(GeomMLBStadiums)
 library(shinyalert)
 
 # Load dataset
